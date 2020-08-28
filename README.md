@@ -16,7 +16,7 @@ SWM releases can be found [here](https://www.spigotmc.org/resources/slimeworldma
 <repositories>
   <repository>
     <id>rapture.pw</id>
-    <url>TO-BE-ADDED</url>
+    <url>https://repo.rapture.pw/repository/maven-releases/</url>
   </repository>
 </repositories>
 ```
@@ -26,7 +26,7 @@ SWM releases can be found [here](https://www.spigotmc.org/resources/slimeworldma
   <dependency>
     <groupId>com.grinderwolf</groupId>
     <artifactId>slimeworldmanager-api</artifactId>
-    <version>INSERT LATEST VERSION HERE</version>
+    <version>2.3.0</version>
   </dependency>
 </dependencies>
 ```
