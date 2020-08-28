@@ -46,83 +46,16 @@ pipeline {
               }
         }
 
-        stage('Maven Publish RELEASE') {
+        stage('Maven Publish') {
               when {
-                branch 'master';
+                anyOf {
+                  branch 'master';
+                  branch 'develop';
+                }
               }
               steps {
                 echo 'Publishing artifacts to Nexus...';
-                script {
-                  pom = readMavenPom file: "pom.xml";
-                  filesByGlob = findFiles(glob: "output/*.${pom.packaging}");
-                  echo "${filesByGlob[0].name} ${filesByGlob[0].path} ${filesByGlob[0].directory} ${filesByGlob[0].length} ${filesByGlob[0].lastModified}"
-                  artifactPath = filesByGlob[0].path;
-                  artifactExists = fileExists artifactPath;
-                  if(artifactExists) {
-                    echo "*** File: ${artifactPath}, group: ${pom.groupId}, packaging: ${pom.packaging}, version ${pom.version}";
-                    nexusArtifactUploader(
-                      nexusVersion: NEXUS_VERSION,
-                      protocol: NEXUS_PROTOCOL,
-                      nexusUrl: NEXUS_URL,
-                      groupId: pom.groupId,
-                      version: pom.version,
-                      repository: NEXUS_RELEASE_REPOSITORY,
-                      credentialsId: NEXUS_CREDENTIAL_ID,
-                      artifacts: [
-                        [artifactId: pom.artifactId,
-                        classifier: '',
-                        file: artifactPath,
-                        type: pom.packaging],
-                        [artifactId: pom.artifactId,
-                        classifier: '',
-                        file: "pom.xml",
-                        type: "pom"]
-                        ]
-                    );
-                  } else {
-                    error "*** File: ${artifactPath}, could not be found";
-                  }
-                }
-              }
-        }
-
-        stage('Maven Publish SNAPSHOT') {
-              when {
-                branch 'develop';
-              }
-              steps {
-                echo 'Publishing artifacts to Nexus...';
-                script {
-                  pom = readMavenPom file: "pom.xml";
-                  filesByGlob = findFiles(glob: "output/*.${pom.packaging}");
-                  echo "${filesByGlob[0].name} ${filesByGlob[0].path} ${filesByGlob[0].directory} ${filesByGlob[0].length} ${filesByGlob[0].lastModified}"
-                  artifactPath = filesByGlob[0].path;
-                  artifactExists = fileExists artifactPath;
-                  if(artifactExists) {
-                    echo "*** File: ${artifactPath}, group: ${pom.groupId}, packaging: ${pom.packaging}, version ${pom.version}";
-                    nexusArtifactUploader(
-                      nexusVersion: NEXUS_VERSION,
-                      protocol: NEXUS_PROTOCOL,
-                      nexusUrl: NEXUS_URL,
-                      groupId: pom.groupId,
-                      version: pom.version,
-                      repository: NEXUS_SNAPSHOT_REPOSITORY,
-                      credentialsId: NEXUS_CREDENTIAL_ID,
-                      artifacts: [
-                        [artifactId: pom.artifactId,
-                        classifier: '',
-                        file: artifactPath,
-                        type: pom.packaging],
-                        [artifactId: pom.artifactId,
-                        classifier: '',
-                        file: "pom.xml",
-                        type: "pom"]
-                        ]
-                    );
-                  } else {
-                    error "*** File: ${artifactPath}, could not be found";
-                  }
-                }
+                sh 'mvn deploy';
               }
         }
     }
