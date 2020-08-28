@@ -26,7 +26,7 @@ SWM releases can be found [here](https://www.spigotmc.org/resources/slimeworldma
   <dependency>
     <groupId>com.grinderwolf</groupId>
     <artifactId>slimeworldmanager-api</artifactId>
-    <version>2.3.0</version>
+    <version>2.3.0-RELEASE</version>
   </dependency>
 </dependencies>
 ```
@@ -34,11 +34,11 @@ SWM releases can be found [here](https://www.spigotmc.org/resources/slimeworldma
 #### Gradle
 ```
 repositories {
-    maven { url "https://repo.glaremasters.me/repository/concuncan/" }
+    maven { url "https://repo.rapture.pw/repository/maven-releases/" }
 }
 
 dependencies {
-    compileOnly group: "com.grinderwolf", name: "slimeworldmanager-api", version: "INSERT LATEST VERSION HERE";
+    compileOnly group: "com.grinderwolf", name: "slimeworldmanager-api", version: "2.3.0-RELEASE";
 }
 ```
 
