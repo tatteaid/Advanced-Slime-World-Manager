@@ -206,7 +206,8 @@ public class v1_16_R1SlimeNMS implements SlimeNMS {
         LOGGER.debug("Server-world: " + world.getName());
         LOGGER.debug("Server-DM: " + dimensionManager);
         LOGGER.debug("Server-env: " + env.getId());
-        LOGGER.debug("Server-CG: " + worldData.getGeneratorSettings());
+        LOGGER.debug("Server-GS: " + worldData.getGeneratorSettings());
+        LOGGER.debug("Server-CG: " + worldData.getGeneratorSettings().getChunkGenerator());
         LOGGER.debug("Server-WS: " + worldData);
         LOGGER.debug("Server-Dir: " + conversionSession.folder.toString());
         LOGGER.debug("Server-DM: " + dimensionManager);
