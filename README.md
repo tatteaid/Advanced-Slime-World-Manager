@@ -1,15 +1,15 @@
-# Slime World Manager [![Build Status](https://travis-ci.org/Paul19988/Advanced-Slime-World-Manager.svg?branch=feature%2F1.16)](https://travis-ci.org/Paul19988/Advanced-Slime-World-Manager)
+# Advanced Slime World Manager [![Build Status](https://travis-ci.org/Paul19988/Advanced-Slime-World-Manager.svg?branch=feature%2F1.16)](https://travis-ci.org/Paul19988/Advanced-Slime-World-Manager)
 
 [<img src="https://discordapp.com/assets/e4923594e694a21542a489471ecffa50.svg" alt="" height="55" />](https://discord.gg/YevvsMa)
 
-Slime World Manager is a Minecraft plugin that implements the Slime Region Format, developed by the Hypixel Dev Team.
+Advanced Slime World Manager is a Minecraft plugin that implements the Slime Region Format, developed by the Hypixel Dev Team.
  Its goal is to provide server administrators with an easy-to-use tool to load worlds faster and save space.
 
 #### Releases
 
-SWM releases can be found [here](https://www.spigotmc.org/resources/slimeworldmanager.69974/history).
+ASWM releases can be found [here](https://github.com/Paul19988/Advanced-Slime-World-Manager/releases).
 
-## Using SWM in your plugin
+## Using ASWM in your plugin
 
 #### Maven
 ```
@@ -29,17 +29,6 @@ SWM releases can be found [here](https://www.spigotmc.org/resources/slimeworldma
     <version>INSERT LATEST VERSION HERE</version>
   </dependency>
 </dependencies>
-```
-
-#### Gradle
-```
-repositories {
-    maven { url "https://repo.glaremasters.me/repository/concuncan/" }
-}
-
-dependencies {
-    compileOnly group: "com.grinderwolf", name: "slimeworldmanager-api", version: "INSERT LATEST VERSION HERE";
-}
 ```
 
 #### Javadocs
@@ -69,7 +58,6 @@ Javadocs can be found [here](https://grinderwolf.github.io/Slime-World-Manager/a
 
 Thanks to:
  * All the contributors who helped me by adding features to SWM.
- * [Glare](https://glaremasters.me) for providing me with a Maven repository.
  * [Minikloon](https://twitter.com/Minikloon) and all the [Hypixel](https://twitter.com/HypixelNetwork) team for developing the SRF.
  
 ## YourKit
