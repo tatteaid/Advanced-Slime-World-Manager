@@ -36,15 +36,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class SWMPlugin extends JavaPlugin implements SlimePlugin {
 
     @Getter
     private SlimeNMS nms;
 
-    private final List<SlimeWorld> worlds = new ArrayList<>();
+    private final Map<String, SlimeWorld> worlds = new HashMap<>();
 
     private static boolean isPaperMC = false;
 
@@ -97,9 +95,9 @@ public class SWMPlugin extends JavaPlugin implements SlimePlugin {
                 System.exit(1);
             }
 
-            SlimeWorld defaultWorld = worlds.stream().filter(world -> world.getName().equals(defaultWorldName)).findFirst().orElse(null);
-            SlimeWorld netherWorld = (getServer().getAllowNether() ? worlds.stream().filter(world -> world.getName().equals(defaultWorldName + "_nether")).findFirst().orElse(null) : null);
-            SlimeWorld endWorld = (getServer().getAllowEnd() ? worlds.stream().filter(world -> world.getName().equals(defaultWorldName + "_the_end")).findFirst().orElse(null) : null);
+            SlimeWorld defaultWorld = worlds.get(defaultWorldName);
+            SlimeWorld netherWorld = (getServer().getAllowNether() ? worlds.get(defaultWorldName + "_nether") : null);
+            SlimeWorld endWorld = (getServer().getAllowEnd() ? worlds.get(defaultWorldName + "_the_end") : null);
 
             nms.setDefaultWorlds(defaultWorld, netherWorld, endWorld);
         } catch (IOException ex) {
@@ -133,13 +131,15 @@ public class SWMPlugin extends JavaPlugin implements SlimePlugin {
             getServer().getPluginManager().registerEvents(new Updater(), this);
         }
 
-        for (SlimeWorld world : worlds) {
+        for (SlimeWorld world : worlds.values()) {
             if (Bukkit.getWorld(world.getName()) == null) {
                 generateWorld(world);
             }
         }
+    }
 
-        worlds.clear();
+    public Map<String, SlimeWorld> getWorlds() {
+        return worlds;
     }
 
     private SlimeNMS getNMSBridge() throws InvalidVersionException {
@@ -179,7 +179,7 @@ public class SWMPlugin extends JavaPlugin implements SlimePlugin {
                     SlimePropertyMap propertyMap = worldData.toPropertyMap();
                     SlimeWorld world = loadWorld(loader, worldName, worldData.isReadOnly(), propertyMap);
 
-                    worlds.add(world);
+                    worlds.put(worldName, world);
                 } catch (IllegalArgumentException | UnknownWorldException | NewerFormatException | WorldInUseException | CorruptedWorldException | IOException ex) {
                     String message;
 
@@ -226,7 +226,7 @@ public class SWMPlugin extends JavaPlugin implements SlimePlugin {
 
         long start = System.currentTimeMillis();
 
-        Logging.info("Loading world " + worldName + ".");
+        Logging.info("loadWorld - Loading world " + worldName + ".");
         byte[] serializedWorld = loader.loadWorld(worldName, readOnly);
         CraftSlimeWorld world;
 
@@ -246,7 +246,7 @@ public class SWMPlugin extends JavaPlugin implements SlimePlugin {
             throw ex;
         }
 
-        Logging.info("World " + worldName + " loaded in " + (System.currentTimeMillis() - start) + "ms.");
+        Logging.info("loadWorld - World " + worldName + " loaded in " + (System.currentTimeMillis() - start) + "ms.");
 
         return world;
     }

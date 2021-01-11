@@ -130,6 +130,9 @@ public class v1_16_R3SlimeNMS implements SlimeNMS {
     public void generateWorld(SlimeWorld world) {
         String worldName = world.getName();
 
+        LOGGER.info("Generating world " + worldName);
+        long startTime = System.currentTimeMillis();
+
         if (Bukkit.getWorld(worldName) != null) {
             throw new IllegalArgumentException("World " + worldName + " already exists! Maybe it's an outdated SlimeWorld object?");
         }
@@ -183,9 +186,6 @@ public class v1_16_R3SlimeNMS implements SlimeNMS {
                 throw new RuntimeException(ex);
             }
         }
-
-        LOGGER.info("Loading world " + worldName);
-        long startTime = System.currentTimeMillis();
 
         server.setReady(true);
 
@@ -252,7 +252,7 @@ public class v1_16_R3SlimeNMS implements SlimeNMS {
 
         Bukkit.getPluginManager().callEvent(new WorldLoadEvent(server.getWorld()));
 
-        LOGGER.info("World " + worldName + " loaded in " + (System.currentTimeMillis() - startTime) + "ms.");
+        LOGGER.info("World " + worldName + " generated in " + (System.currentTimeMillis() - startTime) + "ms.");
     }
 
     private World.Environment getEnvironment(SlimeWorld world) {
