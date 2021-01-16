@@ -3,6 +3,7 @@ package com.grinderwolf.swm.api.world.properties.type;
 import com.flowpowered.nbt.ByteTag;
 import com.flowpowered.nbt.CompoundMap;
 import com.flowpowered.nbt.CompoundTag;
+import com.flowpowered.nbt.Tag;
 import com.grinderwolf.swm.api.world.properties.SlimeProperty;
 
 import java.util.function.Function;
@@ -26,9 +27,9 @@ public class SlimePropertyBoolean extends SlimeProperty<Boolean> {
 	}
 
 	@Override
-	protected Boolean readValue(CompoundTag compound) {
-		return compound.getByteValue(getNbtName())
-			.map((value) -> value == 1)
+	protected Boolean readValue(Tag<?> compoundTag) {
+		return compoundTag.getAsByteTag()
+			.map((value) -> value.getValue() == 1)
 			.orElse(getDefaultValue());
 	}
 }

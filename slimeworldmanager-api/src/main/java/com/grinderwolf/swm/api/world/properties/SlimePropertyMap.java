@@ -26,7 +26,11 @@ public class SlimePropertyMap {
      * @return The current value
      */
     public <T> T getValue(SlimeProperty<T> property) {
-        return property.readValue((CompoundTag) properties.get(property.getNbtName()));
+        if(properties.containsKey(property.getNbtName())) {
+            return property.readValue(properties.get(property.getNbtName()));
+        } else {
+            return property.getDefaultValue();
+        }
     }
 
     /**
@@ -42,6 +46,30 @@ public class SlimePropertyMap {
         }
 
         property.writeValue(properties, value);
+    }
+
+    /**
+     * @deprecated Use setValue()
+     */
+    @Deprecated
+    public void setInt(SlimeProperty<Integer> property, int value) {
+        setValue(property, value);
+    }
+
+    /**
+     * @deprecated Use setValue()
+     */
+    @Deprecated
+    public void setBoolean(SlimeProperty<Boolean> property, boolean value) {
+        setValue(property, value);
+    }
+
+    /**
+     * @deprecated Use setValue()
+     */
+    @Deprecated
+    public void setString(SlimeProperty<String> property, String value) {
+        setValue(property, value);
     }
 
     /**

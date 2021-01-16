@@ -2,6 +2,7 @@ package com.grinderwolf.swm.api.world.properties;
 
 import com.flowpowered.nbt.CompoundMap;
 import com.flowpowered.nbt.CompoundTag;
+import com.flowpowered.nbt.Tag;
 import lombok.Getter;
 
 import java.util.function.Function;
@@ -33,7 +34,7 @@ public abstract class SlimeProperty<T> {
 
     protected abstract void writeValue(CompoundMap compound, T value);
 
-    protected abstract T readValue(CompoundTag compound);
+    protected abstract T readValue(Tag<?> compoundTag);
 
     @Override
     public String toString() {

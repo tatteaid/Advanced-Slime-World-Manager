@@ -1,9 +1,6 @@
 package com.grinderwolf.swm.api.world.properties.type;
 
-import com.flowpowered.nbt.CompoundMap;
-import com.flowpowered.nbt.CompoundTag;
-import com.flowpowered.nbt.IntTag;
-import com.flowpowered.nbt.StringTag;
+import com.flowpowered.nbt.*;
 import com.grinderwolf.swm.api.world.properties.SlimeProperty;
 
 import java.util.function.Function;
@@ -27,8 +24,9 @@ public class SlimePropertyString extends SlimeProperty<String> {
 	}
 
 	@Override
-	protected String readValue(CompoundTag compound) {
-		return compound.getStringValue(getNbtName())
+	protected String readValue(Tag<?> compoundTag) {
+		return compoundTag.getAsStringTag()
+			.map(Tag::getValue)
 			.orElse(getDefaultValue());
 	}
 }
