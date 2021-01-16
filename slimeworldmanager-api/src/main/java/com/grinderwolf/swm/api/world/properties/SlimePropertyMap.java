@@ -4,18 +4,44 @@ import com.flowpowered.nbt.*;
 import lombok.*;
 
 import java.util.*;
+import java.util.function.Function;
 
 /**
  * A Property Map object.
  */
-@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+@RequiredArgsConstructor()
 public class SlimePropertyMap {
 
     @Getter(value = AccessLevel.PRIVATE)
-    private final Map<SlimeProperty, Object> values;
+    private final CompoundMap properties;
 
     public SlimePropertyMap() {
-        this(new HashMap<>());
+        this(new CompoundMap());
+    }
+
+    /**
+     * Return the current value of the given property
+     *
+     * @param property The slime property
+     * @return The current value
+     */
+    public <T> T getValue(SlimeProperty<T> property) {
+        return property.readValue((CompoundTag) properties.get(property.getNbtName()));
+    }
+
+    /**
+     * Update the value of the given property
+     *
+     * @param property The slime property
+     * @param value The new value
+     * @throws IllegalArgumentException if the value fails validation.
+     */
+    public <T> void setValue(SlimeProperty<T> property, T value) {
+        if (property.getValidator() != null && !property.getValidator().apply(value)) {
+            throw new IllegalArgumentException("'" + value + "' is not a valid property value.");
+        }
+
+        property.writeValue(properties, value);
     }
 
     /**
@@ -23,35 +49,16 @@ public class SlimePropertyMap {
      *
      * @param property The property to retrieve the value of.
      * @return the {@link String} value of the property or the default value if unset.
-     * @throws IllegalArgumentException if the property type is not {@link PropertyType#STRING}.
+     * @throws IllegalArgumentException if the property type is not a string.
+     * @deprecated Use generics method
      */
-    public String getString(SlimeProperty property) {
-        ensureType(property, PropertyType.STRING);
-        String value = (String) values.get(property);
-
-        if (value == null) {
-            value = (String) property.getDefaultValue();
+    @Deprecated
+    public String getString(SlimeProperty<?> property) {
+        try {
+            return (String) getValue(property);
+        } catch(ClassCastException err) {
+            throw new IllegalArgumentException("Property type mismatch", err);
         }
-
-        return value;
-    }
-
-    /**
-     * Updates a property with a given string value.
-     *
-     * @param property The property to update.
-     * @param value The value to set.
-     * @throws IllegalArgumentException if the property type is not {@link PropertyType#STRING}.
-     */
-    public void setString(SlimeProperty property, String value) {
-        Objects.requireNonNull(value, "Property value cannot be null");
-        ensureType(property, PropertyType.STRING);
-
-        if (property.getValidator() != null && !property.getValidator().apply(value)) {
-            throw new IllegalArgumentException("'" + value + "' is not a valid property value.");
-        }
-
-        values.put(property, value);
     }
 
     /**
@@ -59,30 +66,16 @@ public class SlimePropertyMap {
      *
      * @param property The property to retrieve the value of.
      * @return the {@link Boolean} value of the property or the default value if unset.
-     * @throws IllegalArgumentException if the property type is not {@link PropertyType#BOOLEAN}.
+     * @throws IllegalArgumentException if the property type is not a boolean.
+     * @deprecated Use generics method
      */
-    public Boolean getBoolean(SlimeProperty property) {
-        ensureType(property, PropertyType.BOOLEAN);
-        Boolean value = (Boolean) values.get(property);
-
-        if (value == null) {
-            value = (Boolean) property.getDefaultValue();
+    @Deprecated
+    public Boolean getBoolean(SlimeProperty<?> property) {
+        try {
+            return (Boolean) getValue(property);
+        } catch(ClassCastException err) {
+            throw new IllegalArgumentException("Property type mismatch", err);
         }
-
-        return value;
-    }
-
-    /**
-     * Updates a property with a given boolean value.
-     *
-     * @param property The property to update.
-     * @param value The value to set.
-     * @throws IllegalArgumentException if the property type is not {@link PropertyType#BOOLEAN}.
-     */
-    public void setBoolean(SlimeProperty property, boolean value) {
-        ensureType(property, PropertyType.BOOLEAN);
-        // There's no need to validate the value, why'd you ever have a validator for a boolean?
-        values.put(property, value);
     }
 
     /**
@@ -90,39 +83,15 @@ public class SlimePropertyMap {
      *
      * @param property The property to retrieve the value of.
      * @return the int value of the property or the default value if unset.
-     * @throws IllegalArgumentException if the property type is not {@link PropertyType#INT}.
+     * @throws IllegalArgumentException if the property type is not an integer.
+     * @deprecated Use generics method
      */
-    public int getInt(SlimeProperty property) {
-        ensureType(property, PropertyType.INT);
-        Integer value = (Integer) values.get(property);
-
-        if (value == null) {
-            value = (Integer) property.getDefaultValue();
-        }
-
-        return value;
-    }
-
-    /**
-     * Updates a property with a given int value.
-     *
-     * @param property The property to update.
-     * @param value The value to set.
-     * @throws IllegalArgumentException if the property type is not {@link PropertyType#INT}.
-     */
-    public void setInt(SlimeProperty property, int value) {
-        ensureType(property, PropertyType.INT);
-
-        if (property.getValidator() != null && !property.getValidator().apply(value)) {
-            throw new IllegalArgumentException("'" + value + "' is not a valid property value.");
-        }
-
-        values.put(property, value);
-    }
-
-    private void ensureType(SlimeProperty property, PropertyType requiredType) {
-        if (property.getType() != requiredType) {
-            throw new IllegalArgumentException("Property " + property.getNbtName() + " type is " + property.getType().name() + ", not " + requiredType.name());
+    @Deprecated
+    public int getInt(SlimeProperty<?> property) {
+        try {
+            return (Integer) getValue(property);
+        } catch(ClassCastException err) {
+            throw new IllegalArgumentException("Property type mismatch", err);
         }
     }
 
@@ -134,7 +103,7 @@ public class SlimePropertyMap {
      * @param propertyMap A {@link SlimePropertyMap}.
      */
     public void merge(SlimePropertyMap propertyMap) {
-        values.putAll(propertyMap.getValues());
+        properties.putAll(propertyMap.properties);
     }
 
     /**
@@ -143,56 +112,11 @@ public class SlimePropertyMap {
      * @return A {@link CompoundTag} with all the properties stored in this map.
      */
     public CompoundTag toCompound() {
-        CompoundMap map = new CompoundMap();
-
-        for (Map.Entry<SlimeProperty, Object> entry : values.entrySet()) {
-            SlimeProperty property = entry.getKey();
-            Object value = entry.getValue();
-
-            switch (property.getType()) {
-                case STRING:
-                    map.put(property.getNbtName(), new StringTag(property.getNbtName(), (String) value));
-                    break;
-                case BOOLEAN:
-                    map.put(property.getNbtName(), new ByteTag(property.getNbtName(), (byte) (((Boolean) value) ? 1 : 0)));
-                    break;
-                case INT:
-                    map.put(property.getNbtName(), new IntTag(property.getNbtName(), (Integer) value));
-                    break;
-            }
-        }
-
-        return new CompoundTag("properties", map);
-    }
-
-    /**
-     * Creates a {@link SlimePropertyMap} based off a {@link CompoundTag}.
-     *
-     * @param compound A {@link CompoundTag} to get the properties from.
-     * @return A {@link SlimePropertyMap} with the properties from the provided {@link CompoundTag}.
-     */
-    public static SlimePropertyMap fromCompound(CompoundTag compound) {
-        Map<SlimeProperty, Object> values = new HashMap<>();
-
-        for (SlimeProperty property : SlimeProperties.VALUES) {
-            switch (property.getType()) {
-                case STRING:
-                    compound.getStringValue(property.getNbtName()).ifPresent((value) -> values.put(property, value));
-                    break;
-                case BOOLEAN:
-                    compound.getByteValue(property.getNbtName()).map((value) -> value == 1).ifPresent((value) -> values.put(property, value));
-                    break;
-                case INT:
-                    compound.getIntValue(property.getNbtName()).ifPresent((value) -> values.put(property, value));
-                    break;
-            }
-        }
-
-        return new SlimePropertyMap(values);
+        return new CompoundTag("properties", properties);
     }
 
     @Override
     public String toString() {
-        return "SlimePropertyMap" + values;
+        return "SlimePropertyMap" + properties;
     }
 }
