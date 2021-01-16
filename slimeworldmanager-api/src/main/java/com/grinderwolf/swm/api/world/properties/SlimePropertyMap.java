@@ -45,57 +45,6 @@ public class SlimePropertyMap {
     }
 
     /**
-     * Returns the string value of a given property.
-     *
-     * @param property The property to retrieve the value of.
-     * @return the {@link String} value of the property or the default value if unset.
-     * @throws IllegalArgumentException if the property type is not a string.
-     * @deprecated Use generics method
-     */
-    @Deprecated
-    public String getString(SlimeProperty<?> property) {
-        try {
-            return (String) getValue(property);
-        } catch(ClassCastException err) {
-            throw new IllegalArgumentException("Property type mismatch", err);
-        }
-    }
-
-    /**
-     * Returns the boolean value of a given property.
-     *
-     * @param property The property to retrieve the value of.
-     * @return the {@link Boolean} value of the property or the default value if unset.
-     * @throws IllegalArgumentException if the property type is not a boolean.
-     * @deprecated Use generics method
-     */
-    @Deprecated
-    public Boolean getBoolean(SlimeProperty<?> property) {
-        try {
-            return (Boolean) getValue(property);
-        } catch(ClassCastException err) {
-            throw new IllegalArgumentException("Property type mismatch", err);
-        }
-    }
-
-    /**
-     * Returns the int value of a given property.
-     *
-     * @param property The property to retrieve the value of.
-     * @return the int value of the property or the default value if unset.
-     * @throws IllegalArgumentException if the property type is not an integer.
-     * @deprecated Use generics method
-     */
-    @Deprecated
-    public int getInt(SlimeProperty<?> property) {
-        try {
-            return (Integer) getValue(property);
-        } catch(ClassCastException err) {
-            throw new IllegalArgumentException("Property type mismatch", err);
-        }
-    }
-
-    /**
      * Copies all values from the specified {@link SlimePropertyMap}.
      * If the same property has different values on both maps, the one
      * on the providen map will be used.

@@ -73,7 +73,4 @@ public class SlimeProperties {
      */
     public static final SlimeProperty<String> DEFAULT_BIOME = new SlimePropertyString("defaultBiome", "minecraft:plains");
 
-    public static final SlimeProperty<?>[] VALUES = { SPAWN_X, SPAWN_Y, SPAWN_Z,
-        DIFFICULTY, ALLOW_MONSTERS, ALLOW_ANIMALS, DRAGON_BATTLE, PVP, ENVIRONMENT,
-        WORLD_TYPE, DEFAULT_BIOME };
 }
