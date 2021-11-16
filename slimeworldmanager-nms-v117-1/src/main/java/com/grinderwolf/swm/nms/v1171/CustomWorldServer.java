@@ -131,7 +131,7 @@ public class CustomWorldServer extends WorldServer {
         if (!slimeWorld.isReadOnly() && !flag1) {
             Bukkit.getPluginManager().callEvent(new WorldSaveEvent(getWorld()));
 
-            this.getChunkProvider().save(true);
+            this.getChunkProvider().save(false);
             this.E.a(this.getWorldBorder().t());
             this.E.setCustomBossEvents(MinecraftServer.getServer().getBossBattleCustomData().save());
 
