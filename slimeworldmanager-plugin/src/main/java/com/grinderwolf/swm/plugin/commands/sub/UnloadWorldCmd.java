@@ -66,6 +66,8 @@ public class UnloadWorldCmd implements Subcommand {
             players.forEach(player -> player.teleportAsync(spawnLocation));
         }
 
+        world.save();
+
         if (!Bukkit.unloadWorld(world, true)) {
             sender.sendMessage(Logging.COMMAND_PREFIX + ChatColor.RED + "Failed to unload world " + worldName + ".");
             return true;

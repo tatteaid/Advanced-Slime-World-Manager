@@ -17,7 +17,6 @@ import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.core.BlockPosition;
 import net.minecraft.core.IRegistry;
-import net.minecraft.core.SectionPosition;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.resources.MinecraftKey;
@@ -31,7 +30,6 @@ import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.IInventory;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.level.ChunkCoordIntPair;
-import net.minecraft.world.level.EnumSkyBlock;
 import net.minecraft.world.level.World;
 import net.minecraft.world.level.biome.BiomeBase;
 import net.minecraft.world.level.biome.WorldChunkManager;
@@ -42,12 +40,10 @@ import net.minecraft.world.level.chunk.*;
 import net.minecraft.world.level.dimension.DimensionManager;
 import net.minecraft.world.level.dimension.WorldDimension;
 import net.minecraft.world.level.levelgen.HeightMap;
-import net.minecraft.world.level.lighting.LightEngine;
 import net.minecraft.world.level.material.FluidType;
 import net.minecraft.world.level.material.FluidTypes;
 import net.minecraft.world.level.storage.IWorldDataServer;
 import org.bukkit.Bukkit;
-import org.bukkit.craftbukkit.v1_17_R1.CraftWorld;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.world.WorldSaveEvent;
 
@@ -135,7 +131,7 @@ public class CustomWorldServer extends WorldServer {
         if (!slimeWorld.isReadOnly() && !flag1) {
             Bukkit.getPluginManager().callEvent(new WorldSaveEvent(getWorld()));
 
-            this.getChunkProvider().save(forceSave);
+            this.getChunkProvider().save(true);
             this.E.a(this.getWorldBorder().t());
             this.E.setCustomBossEvents(MinecraftServer.getServer().getBossBattleCustomData().save());
 
