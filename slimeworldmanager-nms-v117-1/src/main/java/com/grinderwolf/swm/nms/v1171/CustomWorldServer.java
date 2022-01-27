@@ -326,9 +326,8 @@ public class CustomWorldServer extends ServerLevel {
             }
         };
 
-        CompoundTag upgradeDataTag = ((CraftSlimeChunk) chunk).getUpgradeData();
         LevelChunk nmsChunk = new LevelChunk(this, pos, biomeStorage,
-                upgradeDataTag == null ? UpgradeData.EMPTY : new UpgradeData((net.minecraft.nbt.CompoundTag) Converter.convertTag(upgradeDataTag), this),
+                UpgradeData.EMPTY,
                 blockTickList, fluidTickList, 0L, sections, loadEntities);
 
         // Height Maps
@@ -337,7 +336,7 @@ public class CustomWorldServer extends ServerLevel {
         EnumSet<Heightmap.Types> unsetHeightMaps = EnumSet.noneOf(Heightmap.Types.class);
 
         for (Heightmap.Types type : heightMapTypes) {
-            String name = type.name();
+            String name = type.getSerializedName();
 
             if (heightMaps.containsKey(name)) {
                 LongArrayTag heightMap = (LongArrayTag) heightMaps.get(name);

@@ -313,7 +313,7 @@ public class v1_9SlimeWorldFormat implements SlimeWorldReader {
         int minSectionY = dataStream.readInt();
         int maxSectionY = dataStream.readInt();
         int sectionCount = dataStream.readInt();
-        SlimeChunkSection[] chunkSectionArray = new SlimeChunkSection[maxSectionY - minSectionY + 1];
+        SlimeChunkSection[] chunkSectionArray = new SlimeChunkSection[maxSectionY - minSectionY];
 
         for (int i = 0; i < sectionCount; i++) {
             int y = dataStream.readInt();
@@ -355,7 +355,7 @@ public class v1_9SlimeWorldFormat implements SlimeWorldReader {
                 dataStream.skip(hypixelBlocksLength);
             }
 
-            chunkSectionArray[y - minSectionY] = new CraftSlimeChunkSection(y, null, null, null, null, blockStateTag, biomeTag, blockLightArray, skyLightArray);
+            chunkSectionArray[y - minSectionY] = new CraftSlimeChunkSection(null, null, null, null, blockStateTag, biomeTag, blockLightArray, skyLightArray);
         }
 
         return new ChunkSectionData(chunkSectionArray, minSectionY, maxSectionY);
@@ -445,7 +445,7 @@ public class v1_9SlimeWorldFormat implements SlimeWorldReader {
                     dataStream.skip(hypixelBlocksLength);
                 }
 
-                chunkSectionArray[i] = new CraftSlimeChunkSection(i, blockArray, dataArray, paletteTag, blockStatesArray, null, null, blockLightArray, skyLightArray);
+                chunkSectionArray[i] = new CraftSlimeChunkSection(blockArray, dataArray, paletteTag, blockStatesArray, null, null, blockLightArray, skyLightArray);
             }
         }
 

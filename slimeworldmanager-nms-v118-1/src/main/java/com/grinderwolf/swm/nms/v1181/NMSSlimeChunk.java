@@ -84,8 +84,7 @@ public class NMSSlimeChunk implements SlimeChunk {
                     CompoundTag blockStateTag = (CompoundTag) Converter.convertTag("", blockStateData);
                     CompoundTag biomeTag = (CompoundTag) Converter.convertTag("", biomeData);
 
-                    int sectionY = sectionId + this.chunk.getMinSection();
-                    sections[sectionId] = new CraftSlimeChunkSection(sectionY, null, null, null, null, blockStateTag, biomeTag, blockLightArray, skyLightArray);
+                    sections[sectionId] = new CraftSlimeChunkSection(null, null, null, null, blockStateTag, biomeTag, blockLightArray, skyLightArray);
                 }
             }
         }

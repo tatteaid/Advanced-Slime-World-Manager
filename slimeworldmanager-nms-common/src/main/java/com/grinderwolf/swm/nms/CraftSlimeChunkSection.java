@@ -10,8 +10,6 @@ import lombok.*;
 @AllArgsConstructor
 public class CraftSlimeChunkSection implements SlimeChunkSection {
 
-    private final int sectionIndex;
-
     // Pre 1.13 block data
     private final byte[] blocks;
     private final NibbleArray data;

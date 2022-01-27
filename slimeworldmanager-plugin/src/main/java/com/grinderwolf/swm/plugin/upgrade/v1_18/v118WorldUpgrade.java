@@ -149,14 +149,22 @@ public class v118WorldUpgrade implements Upgrade {
         for (SlimeChunk chunk : new ArrayList<>(world.getChunks().values())) {
             CompoundTag[] tags = createBiomeSections(chunk.getBiomes(), false, 0);
 
-            for (SlimeChunkSection section : chunk.getSections()) {
+            SlimeChunkSection[] sections = chunk.getSections();
+            for (int i = 0; i < sections.length; i++) {
+                SlimeChunkSection section = sections[i];
                 if (section == null) {
                     continue;
                 }
 
                 ((CraftSlimeChunkSection) section).setBlockStatesTag(wrapPalette(section.getPalette(), section.getBlockStates()));
-                ((CraftSlimeChunkSection) section).setBiomeTag(tags[section.getSectionIndex()]);
+                ((CraftSlimeChunkSection) section).setBiomeTag(tags[i]);
             }
+
+
+            SlimeChunkSection[] shiftedSections = new SlimeChunkSection[sections.length + 4];
+            System.arraycopy(sections, 0, shiftedSections, 4, sections.length);
+
+            ((CraftSlimeChunk) chunk).setSections(shiftedSections); // Shift all sections up 4
         }
     }
 

@@ -345,12 +345,13 @@ public class CraftSlimeWorld implements SlimeWorld {
                 outStream.writeInt(chunk.getMaxSection());
                 outStream.writeInt(Math.toIntExact(Arrays.stream(sections).filter(Objects::nonNull).count()));
 
-                for (SlimeChunkSection section : sections) {
+                for (int i = 0; i < sections.length; i++) {
+                    SlimeChunkSection section = sections[i];
                     if (section == null) {
                         continue;
                     }
 
-                    outStream.writeInt(section.getSectionIndex());
+                    outStream.writeInt(i);
 
                     // Block Light
                     boolean hasBlockLight = section.getBlockLight() != null;

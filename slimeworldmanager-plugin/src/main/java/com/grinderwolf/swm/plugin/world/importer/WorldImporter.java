@@ -312,7 +312,7 @@ public class WorldImporter {
             NibbleArray blockLightArray = sectionTag.getValue().containsKey("BlockLight") ? new NibbleArray(sectionTag.getByteArrayValue("BlockLight").get()) : null;
             NibbleArray skyLightArray = sectionTag.getValue().containsKey("SkyLight") ? new NibbleArray(sectionTag.getByteArrayValue("SkyLight").get()) : null;
 
-            sectionArray[index - minSectionY] = new CraftSlimeChunkSection(index, blocks, dataArray, paletteTag, blockStatesArray, blockStatesTag, biomeTag, blockLightArray, skyLightArray);
+            sectionArray[index - minSectionY] = new CraftSlimeChunkSection(blocks, dataArray, paletteTag, blockStatesArray, blockStatesTag, biomeTag, blockLightArray, skyLightArray);
         }
 
         for (SlimeChunkSection section : sectionArray) {
