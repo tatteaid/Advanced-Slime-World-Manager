@@ -68,7 +68,7 @@ public class NMSSlimeChunk implements SlimeChunk {
             if (section != null) {
                 section.recalcBlockCounts();
 
-                if (section.hasOnlyAir()) { // If the section is empty, just ignore it to save space
+                if (!section.hasOnlyAir()) { // If the section is empty, just ignore it to save space
                     // Block Light Nibble Array
                     NibbleArray blockLightArray = Converter.convertArray(lightEngine.getLayerListener(LightLayer.BLOCK).getDataLayerData(SectionPos.of(chunk.getPos(), sectionId)));
 
@@ -109,6 +109,10 @@ public class NMSSlimeChunk implements SlimeChunk {
         CompoundMap heightMaps = new CompoundMap();
 
         for (Map.Entry<Heightmap.Types, Heightmap> entry : chunk.heightmaps.entrySet()) {
+            if (!entry.getKey().keepAfterWorldgen()) {
+                continue;
+            }
+
             Heightmap.Types type = entry.getKey();
             Heightmap map = entry.getValue();
 
