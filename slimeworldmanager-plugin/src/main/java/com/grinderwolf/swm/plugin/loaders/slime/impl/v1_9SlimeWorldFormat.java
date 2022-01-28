@@ -355,7 +355,7 @@ public class v1_9SlimeWorldFormat implements SlimeWorldReader {
                 dataStream.skip(hypixelBlocksLength);
             }
 
-            chunkSectionArray[y - minSectionY] = new CraftSlimeChunkSection(null, null, null, null, blockStateTag, biomeTag, blockLightArray, skyLightArray);
+            chunkSectionArray[y] = new CraftSlimeChunkSection(null, null, null, null, blockStateTag, biomeTag, blockLightArray, skyLightArray);
         }
 
         return new ChunkSectionData(chunkSectionArray, minSectionY, maxSectionY);
