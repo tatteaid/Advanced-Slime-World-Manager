@@ -86,6 +86,6 @@ public class CraftCLSMBridge implements CLSMBridge {
     }
 
     static void initialize(v1181SlimeNMS instance) {
-        ClassModifier.setLoader(new CraftCLSMBridge(instance));
+        ClassModifier.registerLoader(new CraftCLSMBridge(instance));
     }
 }
