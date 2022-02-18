@@ -159,7 +159,7 @@ public class CustomWorldServer extends ServerLevel {
         if (!slimeWorld.isReadOnly() && !flag1) {
             Bukkit.getPluginManager().callEvent(new WorldSaveEvent(getWorld()));
 
-            this.chunkSource.save(forceSave);
+            this.getChunkSource().save(forceSave);
             this.serverLevelData.setWorldBorder(this.getWorldBorder().createSettings());
             this.serverLevelData.setCustomBossEvents(MinecraftServer.getServer().getCustomBossEvents().save());
 
