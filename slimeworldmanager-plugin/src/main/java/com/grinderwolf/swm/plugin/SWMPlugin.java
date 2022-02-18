@@ -55,6 +55,8 @@ public class SWMPlugin extends JavaPlugin implements SlimePlugin {
             return false;
         }
     }
+    
+    private static final int BSTATS_ID = 5419;
 
     @Override
     public void onLoad() {
@@ -114,8 +116,8 @@ public class SWMPlugin extends JavaPlugin implements SlimePlugin {
             this.setEnabled(false);
             return;
         }
-
-        new Metrics(this);
+        
+        Metrics metrics = new Metrics(this, BSTATS_ID);
 
         final CommandManager commandManager = new CommandManager();
         final PluginCommand swmCommand = getCommand("swm");

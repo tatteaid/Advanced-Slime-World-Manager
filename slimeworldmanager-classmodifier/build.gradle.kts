@@ -4,7 +4,7 @@ plugins {
 
 dependencies {
     implementation("org.javassist:javassist:3.28.0-GA")
-    implementation("org.yaml:snakeyaml:1.29")
+    implementation("org.yaml:snakeyaml:1.30")
     compileOnly(project(":slimeworldmanager-classmodifierapi"))
 }
 
