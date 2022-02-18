@@ -1,5 +1,6 @@
 package com.grinderwolf.swm.nms.v1181;
 
+import ca.spottedleaf.starlight.common.light.*;
 import com.flowpowered.nbt.CompoundMap;
 import com.flowpowered.nbt.CompoundTag;
 import com.flowpowered.nbt.LongArrayTag;
@@ -140,20 +141,6 @@ public class CustomWorldServer extends ServerLevel {
         this.keepSpawnInMemory = false;
     }
 
-    public static CompletableFuture<Integer> relight(net.minecraft.world.level.Level world, Collection<? extends LevelChunk> chunks) {
-        CompletableFuture<Integer> future = new CompletableFuture<>();
-        ServerLevel level = world.getMinecraftWorld();
-
-        Set<ChunkPos> chunkPos = chunks.stream()
-                .map(LevelChunk::getPos)
-                .collect(Collectors.toSet());
-
-        level.chunkSource.getLightEngine().relight(chunkPos, pos -> {
-        }, future::complete);
-
-        return future;
-    }
-
     @Override
     public void save(@Nullable ProgressListener progressUpdate, boolean forceSave, boolean flag1) {
         if (!slimeWorld.isReadOnly() && !flag1) {
@@ -233,19 +220,6 @@ public class CustomWorldServer extends ServerLevel {
         return new ImposterProtoChunk(chunk, false);
     }
 
-    private boolean isSectionEmptyAsync(LevelChunkSection section) {
-        AtomicBoolean empty = new AtomicBoolean(true);
-        section.states.forEachLocation((state, location) -> {
-            if (!empty.get()) return;
-
-            if (!state.isAir() || state.getFluidState().isEmpty()) {
-                empty.set(false);
-            }
-        });
-
-        return empty.get();
-    }
-
     private LevelChunk createChunk(SlimeChunk chunk) {
         int x = chunk.getX();
         int z = chunk.getZ();
@@ -254,18 +228,31 @@ public class CustomWorldServer extends ServerLevel {
 
         // Chunk sections
         LevelChunkSection[] sections = new LevelChunkSection[this.getSectionsCount()];
-//        LightEngine lightEngine = getChunkProvider().getLightEngine();
-//
-//        lightEngine.b(pos, true);
+
+        Object[] blockNibbles = null;
+        Object[] skyNibbles = null;
+        if (v1181SlimeNMS.isPaperMC) {
+            blockNibbles = ca.spottedleaf.starlight.common.light.StarLightEngine.getFilledEmptyLight(this);
+            skyNibbles = ca.spottedleaf.starlight.common.light.StarLightEngine.getFilledEmptyLight(this);
+            MinecraftServer.getServer().scheduleOnMain(() -> {
+                getLightEngine().retainData(pos, true);
+            });
+        }
 
         Registry<Biome> biomeRegistry = this.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY);
-        Codec<PalettedContainer<Biome>> codec = PalettedContainer.codec(biomeRegistry, biomeRegistry.byNameCodec(), PalettedContainer.Strategy.SECTION_BIOMES, (Biome) biomeRegistry.getOrThrow(Biomes.PLAINS), null);
+        // Ignore deprecated method
+        Codec<PalettedContainer<Biome>> codec = PalettedContainer.codec(biomeRegistry, biomeRegistry.byNameCodec(), PalettedContainer.Strategy.SECTION_BIOMES, (Biome) biomeRegistry.getOrThrow(Biomes.PLAINS));
 
         for (int sectionId = 0; sectionId < chunk.getSections().length; sectionId++) {
             SlimeChunkSection slimeSection = chunk.getSections()[sectionId];
 
             if (slimeSection != null) {
-                BlockState[] presetBlockStates = this.chunkPacketBlockController.getPresetBlockStates(this, pos, sectionId << 4); // todo this is for anti xray.. do we need it?
+                BlockState[] presetBlockStates = null;
+                if (v1181SlimeNMS.isPaperMC) {
+                    blockNibbles[sectionId] = new ca.spottedleaf.starlight.common.light.SWMRNibbleArray(slimeSection.getBlockLight().getBacking());
+                    skyNibbles[sectionId] = new ca.spottedleaf.starlight.common.light.SWMRNibbleArray(slimeSection.getSkyLight().getBacking());
+                    presetBlockStates = this.chunkPacketBlockController.getPresetBlockStates(this, pos, sectionId << 4); // todo this is for anti xray.. do we need it?
+                }
 
                 PalettedContainer<BlockState> blockPalette;
                 if (slimeSection.getBlockStatesTag() != null) {
@@ -290,10 +277,6 @@ public class CustomWorldServer extends ServerLevel {
                 }
 
                 LevelChunkSection section = new LevelChunkSection(sectionId << 4, blockPalette, biomePalette);
-
-                if (!isSectionEmptyAsync(section)) {
-                    section.recalcBlockCounts();
-                }
                 sections[sectionId] = section;
             }
         }
@@ -303,13 +286,12 @@ public class CustomWorldServer extends ServerLevel {
         // but at the same time it won't be completely unloaded from memory
 //        getChunkProvider().addTicket(SWM_TICKET, pos, 33, Unit.INSTANCE);
 
+
         LevelChunk.PostLoadProcessor loadEntities = (nmsChunk) -> {
-            relight(this, List.of(nmsChunk));
 
             // Load tile entities
 //            System.out.println("Loading tile entities for chunk (" + pos.x + ", " + pos.z + ") on world " + slimeWorld.getName());
             List<CompoundTag> tileEntities = chunk.getTileEntities();
-            int loadedEntities = 0;
 
             if (tileEntities != null) {
                 for (CompoundTag tag : tileEntities) {
@@ -323,7 +305,6 @@ public class CustomWorldServer extends ServerLevel {
 
                         if (entity != null) {
                             nmsChunk.setBlockEntity(entity);
-                            loadedEntities++;
                         }
                     }
                 }
@@ -331,8 +312,6 @@ public class CustomWorldServer extends ServerLevel {
 
             // Load entities
             List<CompoundTag> entities = chunk.getEntities();
-            loadedEntities = 0;
-
             if (entities != null) {
                 this.entityManager.addLegacyChunkEntities(EntityType.loadEntitiesRecursive(entities
                                 .stream()
@@ -352,6 +331,12 @@ public class CustomWorldServer extends ServerLevel {
         EnumSet<Heightmap.Types> heightMapTypes = nmsChunk.getStatus().heightmapsAfter();
         CompoundMap heightMaps = chunk.getHeightMaps().getValue();
         EnumSet<Heightmap.Types> unsetHeightMaps = EnumSet.noneOf(Heightmap.Types.class);
+
+        // Light
+       if (v1181SlimeNMS.isPaperMC) {
+           nmsChunk.setBlockNibbles((SWMRNibbleArray[]) blockNibbles);
+           nmsChunk.setSkyNibbles((SWMRNibbleArray[]) skyNibbles);
+       }
 
         for (Heightmap.Types type : heightMapTypes) {
             String name = type.getSerializedName();
@@ -384,23 +369,4 @@ public class CustomWorldServer extends ServerLevel {
         }
     }
 
-    @Override
-    public void unload(LevelChunk chunk) {
-        Iterator<BlockEntity> tileEntities = chunk.getBlockEntities().values().iterator();
-        do {
-            BlockEntity tileentity;
-            do {
-                if (!tileEntities.hasNext()) {
-//                    chunk.C();
-                    return;
-                }
-                tileentity = tileEntities.next();
-            } while (!(tileentity instanceof Container));
-
-            for (HumanEntity h : Lists.newArrayList(((Container) tileentity).getViewers())) {
-                ((CraftHumanEntity) h).getHandle().closeUnloadedInventory(InventoryCloseEvent.Reason.UNLOADED);
-            }
-            ((Container) tileentity).getViewers().clear();
-        } while (true);
-    }
 }

@@ -60,7 +60,9 @@ public class NMSSlimeChunk implements SlimeChunk {
         LevelLightEngine lightEngine = chunk.getLevel().getChunkSource().getLightEngine();
 
         Registry<Biome> biomeRegistry = chunk.getLevel().registryAccess().registryOrThrow(Registry.BIOME_REGISTRY);
-        Codec<PalettedContainer<Biome>> codec = PalettedContainer.codec(biomeRegistry, biomeRegistry.byNameCodec(), PalettedContainer.Strategy.SECTION_BIOMES, (Biome) biomeRegistry.getOrThrow(Biomes.PLAINS), null);
+
+        // Ignore deprecation, spigot only method
+        Codec<PalettedContainer<Biome>> codec = PalettedContainer.codec(biomeRegistry, biomeRegistry.byNameCodec(), PalettedContainer.Strategy.SECTION_BIOMES, (Biome) biomeRegistry.getOrThrow(Biomes.PLAINS));
 
         for (int sectionId = 0; sectionId < chunk.getSections().length; sectionId++) {
             LevelChunkSection section = chunk.getSections()[sectionId];
@@ -78,7 +80,7 @@ public class NMSSlimeChunk implements SlimeChunk {
                     // Tile/Entity Data
 
                     // Block Data
-                    Tag blockStateData = ChunkSerializer.BLOCK_STATE_CODEC.encodeStart(NbtOps.INSTANCE, section.states).getOrThrow(false, System.err::println); // todo error handling
+                    Tag blockStateData = ChunkSerializer.BLOCK_STATE_CODEC.encodeStart(NbtOps.INSTANCE, section.getStates()).getOrThrow(false, System.err::println); // todo error handling
                     Tag biomeData = codec.encodeStart(NbtOps.INSTANCE, section.getBiomes()).getOrThrow(false, System.err::println); // todo error handling
 
                     CompoundTag blockStateTag = (CompoundTag) Converter.convertTag("", blockStateData);
@@ -143,11 +145,8 @@ public class NMSSlimeChunk implements SlimeChunk {
         List<CompoundTag> entities = new ArrayList<>();
 
         PersistentEntitySectionManager<Entity> entityManager = chunk.level.entityManager;
-        Iterator<Entity> entitySlices = entityManager.getEntityGetter().getAll().iterator();
 
-        while (entitySlices.hasNext()) {
-            Entity entity = entitySlices.next();
-
+        for (Entity entity : entityManager.getEntityGetter().getAll()) {
             ChunkPos chunkPos = chunk.getPos();
             ChunkPos entityPos = entity.chunkPosition();
 

@@ -55,7 +55,7 @@ public class v1181SlimeNMS implements SlimeNMS {
     private static final Logger LOGGER = LogManager.getLogger("SWM");
     private static final File UNIVERSE_DIR;
     public static LevelStorageSource CONVERTABLE;
-    private static boolean isPaperMC;
+    public static boolean isPaperMC;
 
     static {
         Path path;
