@@ -313,7 +313,7 @@ public class v1_9SlimeWorldFormat implements SlimeWorldReader {
         int minSectionY = dataStream.readInt();
         int maxSectionY = dataStream.readInt();
         int sectionCount = dataStream.readInt();
-        SlimeChunkSection[] chunkSectionArray = new SlimeChunkSection[maxSectionY - minSectionY];
+        SlimeChunkSection[] chunkSectionArray = new SlimeChunkSection[sectionCount];
 
         for (int i = 0; i < sectionCount; i++) {
             int y = dataStream.readInt();
