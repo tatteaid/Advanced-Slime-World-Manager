@@ -7,6 +7,7 @@ import com.flowpowered.nbt.LongArrayTag;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.grinderwolf.swm.api.exceptions.UnknownWorldException;
+import com.grinderwolf.swm.api.utils.*;
 import com.grinderwolf.swm.api.world.SlimeChunk;
 import com.grinderwolf.swm.api.world.SlimeChunkSection;
 import com.grinderwolf.swm.api.world.properties.SlimeProperties;
@@ -249,8 +250,16 @@ public class CustomWorldServer extends ServerLevel {
             if (slimeSection != null) {
                 BlockState[] presetBlockStates = null;
                 if (v1181SlimeNMS.isPaperMC) {
-                    blockNibbles[sectionId] = new ca.spottedleaf.starlight.common.light.SWMRNibbleArray(slimeSection.getBlockLight().getBacking());
-                    skyNibbles[sectionId] = new ca.spottedleaf.starlight.common.light.SWMRNibbleArray(slimeSection.getSkyLight().getBacking());
+                    NibbleArray blockLight = slimeSection.getBlockLight();
+                    if (blockLight != null) {
+                        blockNibbles[sectionId] = new ca.spottedleaf.starlight.common.light.SWMRNibbleArray(blockLight.getBacking());
+                    }
+
+                    NibbleArray skyLight = slimeSection.getSkyLight();
+                    if (skyLight != null) {
+                        skyNibbles[sectionId] = new ca.spottedleaf.starlight.common.light.SWMRNibbleArray(skyLight.getBacking());
+                    }
+
                     presetBlockStates = this.chunkPacketBlockController.getPresetBlockStates(this, pos, sectionId << 4); // todo this is for anti xray.. do we need it?
                 }
 

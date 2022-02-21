@@ -5,6 +5,7 @@ import com.flowpowered.nbt.ListTag;
 import com.grinderwolf.swm.api.utils.NibbleArray;
 import com.grinderwolf.swm.api.world.SlimeChunkSection;
 import lombok.*;
+import org.jetbrains.annotations.*;
 
 @Getter
 @AllArgsConstructor
@@ -24,6 +25,8 @@ public class CraftSlimeChunkSection implements SlimeChunkSection {
     @Setter
     private CompoundTag biomeTag;
 
+    @Nullable
     private final NibbleArray blockLight;
+    @Nullable
     private final NibbleArray skyLight;
 }
