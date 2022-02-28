@@ -25,8 +25,11 @@ public class CraftSlimeChunkSection implements SlimeChunkSection {
     @Setter
     private CompoundTag biomeTag;
 
+    private final int sectionIndex;
+
     @Nullable
     private final NibbleArray blockLight;
     @Nullable
     private final NibbleArray skyLight;
+
 }

@@ -355,7 +355,7 @@ public class v1_9SlimeWorldFormat implements SlimeWorldReader {
                 dataStream.skip(hypixelBlocksLength);
             }
 
-            chunkSectionArray[y] = new CraftSlimeChunkSection(null, null, null, null, blockStateTag, biomeTag, blockLightArray, skyLightArray);
+            chunkSectionArray[i] = new CraftSlimeChunkSection(null, null, null, null, blockStateTag, biomeTag, y, blockLightArray, skyLightArray);
         }
 
         return new ChunkSectionData(chunkSectionArray, minSectionY, maxSectionY);
@@ -445,7 +445,7 @@ public class v1_9SlimeWorldFormat implements SlimeWorldReader {
                     dataStream.skip(hypixelBlocksLength);
                 }
 
-                chunkSectionArray[i] = new CraftSlimeChunkSection(blockArray, dataArray, paletteTag, blockStatesArray, null, null, blockLightArray, skyLightArray);
+                chunkSectionArray[i] = new CraftSlimeChunkSection(blockArray, dataArray, paletteTag, blockStatesArray, null, null, i, blockLightArray, skyLightArray);
             }
         }
 

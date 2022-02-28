@@ -45,6 +45,8 @@ public interface SlimeChunkSection {
 
     CompoundTag getBiomeTag();
 
+    int getSectionIndex();
+
     /**
      * Returns the block light data.
      *
