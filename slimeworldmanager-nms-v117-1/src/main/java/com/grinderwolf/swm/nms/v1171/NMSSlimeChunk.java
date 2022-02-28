@@ -79,7 +79,11 @@ public class NMSSlimeChunk implements SlimeChunk {
                     long[] blockStates = blocksCompound.getLongArray("BlockStates");
 
                     sections[sectionId] = new CraftSlimeChunkSection(null, null, palette, blockStates, null, null, sectionId, blockLightArray, skyLightArray);
+                }else{
+                    sections[sectionId] = new CraftSlimeChunkSection(null, null, null, null, null, null, sectionId, null, null);
                 }
+            }else{
+                sections[sectionId] = new CraftSlimeChunkSection(null, null, null, null, null, null, sectionId, null, null);
             }
         }
 
