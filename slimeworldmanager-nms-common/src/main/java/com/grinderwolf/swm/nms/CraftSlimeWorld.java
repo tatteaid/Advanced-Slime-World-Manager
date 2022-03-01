@@ -265,8 +265,8 @@ public class CraftSlimeWorld implements SlimeWorld {
             }
 
             // Biomes
-            int[] biomes = chunk.getBiomes();
             if (worldVersion >= 0x04 && worldVersion < 0x08) {
+                int[] biomes = chunk.getBiomes();
                 outStream.writeInt(biomes.length);
 
                 for (int biome : biomes) {
@@ -347,7 +347,7 @@ public class CraftSlimeWorld implements SlimeWorld {
 
                 for (int i = 0; i < sections.length; i++) {
                     SlimeChunkSection section = sections[i];
-                    if (section == null) {
+                    if (section == null) { // Some versions can contain null sections, ignore those.
                         continue;
                     }
 

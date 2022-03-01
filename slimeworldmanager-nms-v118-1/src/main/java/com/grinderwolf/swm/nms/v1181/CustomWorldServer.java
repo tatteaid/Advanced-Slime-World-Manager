@@ -235,7 +235,7 @@ public class CustomWorldServer extends ServerLevel {
         if (v1181SlimeNMS.isPaperMC) {
             blockNibbles = ca.spottedleaf.starlight.common.light.StarLightEngine.getFilledEmptyLight(this);
             skyNibbles = ca.spottedleaf.starlight.common.light.StarLightEngine.getFilledEmptyLight(this);
-            MinecraftServer.getServer().scheduleOnMain(() -> {
+            getServer().scheduleOnMain(() -> {
                 getLightEngine().retainData(pos, true);
             });
         }
