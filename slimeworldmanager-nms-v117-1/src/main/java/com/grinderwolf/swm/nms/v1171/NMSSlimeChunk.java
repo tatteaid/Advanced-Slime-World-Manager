@@ -119,18 +119,14 @@ public class NMSSlimeChunk implements SlimeChunk {
         List<CompoundTag> entities = new ArrayList<>();
 
         PersistentEntitySectionManager<Entity> entityManager = chunk.level.entityManager;
-        Iterator<Entity> entitySlices = entityManager.getEntityGetter().getAll().iterator();
 
-        while (entitySlices.hasNext()) {
-            Entity entity = entitySlices.next();
-
+        for (Entity entity : entityManager.getEntityGetter().getAll()) {
             ChunkPos chunkPos = chunk.getPos();
             ChunkPos entityPos = entity.chunkPosition();
 
             if (chunkPos.x == entityPos.x && chunkPos.z == entityPos.z) {
                 net.minecraft.nbt.CompoundTag entityNbt = new net.minecraft.nbt.CompoundTag();
                 if (entity.save(entityNbt)) {
-                    chunk.setLightCorrect(true);
                     entities.add((CompoundTag) Converter.convertTag("", entityNbt));
                 }
             }

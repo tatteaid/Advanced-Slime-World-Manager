@@ -138,7 +138,6 @@ public class NMSSlimeChunk implements SlimeChunk {
             if (chunkPos.x == entityPos.x && chunkPos.z == entityPos.z) {
                 net.minecraft.nbt.CompoundTag entityNbt = new net.minecraft.nbt.CompoundTag();
                 if (entity.save(entityNbt)) {
-                    chunk.setLightCorrect(true);
                     entities.add((CompoundTag) Converter.convertTag("", entityNbt));
                 }
             }
