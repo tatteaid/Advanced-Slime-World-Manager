@@ -138,19 +138,20 @@ public class v1181SlimeNMS implements SlimeNMS {
         if (normalWorld != null) {
             normalWorld.getPropertyMap().setValue(SlimeProperties.ENVIRONMENT, World.Environment.NORMAL.toString().toLowerCase());
             defaultWorld = createCustomWorld(normalWorld, Level.OVERWORLD);
+            injectFakeDimensions = true;
         }
 
         if (netherWorld != null) {
             netherWorld.getPropertyMap().setValue(SlimeProperties.ENVIRONMENT, World.Environment.NETHER.toString().toLowerCase());
             defaultNetherWorld = createCustomWorld(netherWorld, Level.NETHER);
+            injectFakeDimensions = true;
         }
 
         if (endWorld != null) {
             endWorld.getPropertyMap().setValue(SlimeProperties.ENVIRONMENT, World.Environment.THE_END.toString().toLowerCase());
             defaultEndWorld = createCustomWorld(endWorld, Level.END);
+            injectFakeDimensions = true;
         }
-
-        injectFakeDimensions = true;
     }
 
     @Override
