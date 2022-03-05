@@ -156,6 +156,7 @@ public class v118WorldUpgrade implements Upgrade {
                     continue;
                 }
 
+
                 ((CraftSlimeChunkSection) section).setBlockStatesTag(wrapPalette(section.getPalette(), section.getBlockStates()));
                 ((CraftSlimeChunkSection) section).setBiomeTag(tags[i]);
             }

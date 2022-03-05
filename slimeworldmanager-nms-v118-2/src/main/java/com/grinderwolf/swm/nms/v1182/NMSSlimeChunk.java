@@ -20,14 +20,17 @@ import net.minecraft.world.level.chunk.storage.*;
 import net.minecraft.world.level.entity.*;
 import net.minecraft.world.level.levelgen.*;
 import net.minecraft.world.level.lighting.*;
+import org.bukkit.craftbukkit.v1_18_R2.entity.*;
 
 import java.util.*;
 
-@Data
-@AllArgsConstructor
 public class NMSSlimeChunk implements SlimeChunk {
 
     private LevelChunk chunk;
+
+    public NMSSlimeChunk(LevelChunk chunk) {
+        this.chunk = chunk;
+    }
 
     @Override
     public String getWorldName() {
@@ -129,19 +132,22 @@ public class NMSSlimeChunk implements SlimeChunk {
     public List<CompoundTag> getEntities() {
         List<CompoundTag> entities = new ArrayList<>();
 
-        PersistentEntitySectionManager<Entity> entityManager = chunk.level.entityManager;
+        for (var bukkitEntity : chunk.getBukkitChunk().getEntities()) { // Use api method for performance gains
+            Entity entity = ((CraftEntity) bukkitEntity).getHandle();
 
-        for (Entity entity : entityManager.getEntityGetter().getAll()) {
-            ChunkPos chunkPos = chunk.getPos();
-            ChunkPos entityPos = entity.chunkPosition();
-
-            if (chunkPos.x == entityPos.x && chunkPos.z == entityPos.z) {
-                net.minecraft.nbt.CompoundTag entityNbt = new net.minecraft.nbt.CompoundTag();
-                if (entity.save(entityNbt)) {
-                    entities.add((CompoundTag) Converter.convertTag("", entityNbt));
-                }
+            net.minecraft.nbt.CompoundTag entityNbt = new net.minecraft.nbt.CompoundTag();
+            if (entity.save(entityNbt)) {
+                entities.add((CompoundTag) Converter.convertTag("", entityNbt));
             }
         }
         return entities;
+    }
+
+    public LevelChunk getChunk() {
+        return chunk;
+    }
+
+    public void setChunk(LevelChunk chunk) {
+        this.chunk = chunk;
     }
 }

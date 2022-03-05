@@ -125,7 +125,7 @@ public class CraftSlimeWorld implements SlimeWorld {
         }
 
         sortedChunks.sort(Comparator.comparingLong(chunk -> (long) chunk.getZ() * Integer.MAX_VALUE + (long) chunk.getX()));
-        sortedChunks.removeIf(chunk -> chunk == null || Arrays.stream(chunk.getSections()).allMatch(Objects::isNull)); // Remove empty chunks to save space
+        sortedChunks.removeIf(Objects::isNull); // Remove empty chunks to save space
 
         // Store world properties
         if(!extraData.getValue().containsKey("properties")) {

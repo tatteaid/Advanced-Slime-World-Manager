@@ -15,9 +15,6 @@ import java.util.function.BooleanSupplier;
  */
 public class ClassModifier {
 
-    // Required for Paper 1.13 as javassist can't compile this class
-    public static final BooleanSupplier BOOLEAN_SUPPLIER = () -> true;
-
     private static CLSMBridge customLoader;
 
     public static CompletableFuture getFutureChunk(Object world, int x, int z) {
@@ -38,19 +35,11 @@ public class ClassModifier {
         return customLoader != null && customLoader.isCustomWorld(world);
     }
 
-    public static boolean skipWorldAdd(Object world) {
-        return customLoader != null && customLoader.skipWorldAdd(world);
-    }
-
     public static void setLoader(CLSMBridge loader) {
         customLoader = loader;
     }
 
-    public static Object[] getDefaultWorlds() {
-        return customLoader != null ? customLoader.getDefaultWorlds() : null;
-    }
-
-    public static Object getDefaultGamemode() {
-        return customLoader != null ? customLoader.getDefaultGamemode() : null;
+    public static Object injectCustomWorlds() {
+        return customLoader.injectCustomWorlds();
     }
 }

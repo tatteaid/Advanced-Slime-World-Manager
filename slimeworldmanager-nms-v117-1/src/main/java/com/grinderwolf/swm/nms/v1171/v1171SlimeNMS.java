@@ -12,7 +12,6 @@ import net.minecraft.SharedConstants;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -20,8 +19,8 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.dedicated.DedicatedServerProperties;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.*;
 import net.minecraft.util.datafix.DataFixTypes;
-import net.minecraft.util.datafix.DataFixers;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelSettings;
@@ -29,26 +28,24 @@ import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.dimension.end.EndDragonFight;
-import net.minecraft.world.level.storage.LevelStorageSource;
-import net.minecraft.world.level.storage.LevelVersion;
-import net.minecraft.world.level.storage.PrimaryLevelData;
+import net.minecraft.world.level.levelgen.*;
+import net.minecraft.world.level.storage.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.libs.org.apache.commons.io.FileUtils;
 import org.bukkit.craftbukkit.v1_17_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_17_R1.scoreboard.*;
 import org.bukkit.event.world.WorldInitEvent;
 import org.bukkit.event.world.WorldLoadEvent;
+import org.jetbrains.annotations.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Getter
 public class v1171SlimeNMS implements SlimeNMS {
@@ -85,7 +82,7 @@ public class v1171SlimeNMS implements SlimeNMS {
 
     private final byte worldVersion = 0x07;
 
-    private boolean loadingDefaultWorlds = true; // If true, the addWorld method will not be skipped
+    private boolean injectFakeDimensions = false;
 
     private CustomWorldServer defaultWorld;
     private CustomWorldServer defaultNetherWorld;
@@ -102,43 +99,73 @@ public class v1171SlimeNMS implements SlimeNMS {
     }
 
     @Override
+    public Object injectDefaultWorlds() {
+        if (!injectFakeDimensions) {
+            return null;
+        }
+
+        System.out.println("INJECTING: " + defaultWorld + " " + defaultNetherWorld + " " + defaultEndWorld);
+
+
+        MinecraftServer server = MinecraftServer.getServer();
+        server.server.scoreboardManager = new CraftScoreboardManager(server, server.getScoreboard());
+
+        if (defaultWorld != null) {
+            registerWorld(defaultWorld);
+        }
+        if (defaultNetherWorld != null) {
+            registerWorld(defaultNetherWorld);
+        }
+        if (defaultEndWorld != null) {
+            registerWorld(defaultEndWorld);
+        }
+
+        injectFakeDimensions = false;
+        return new MappedRegistry<>(Registry.ACTIVITY_REGISTRY, Lifecycle.stable());
+    }
+
+    @Override
     public void setDefaultWorlds(SlimeWorld normalWorld, SlimeWorld netherWorld, SlimeWorld endWorld) {
+        try {
+            MinecraftServer server = MinecraftServer.getServer();
+
+            LevelSettings worldsettings;
+            WorldGenSettings generatorsettings;
+
+            DedicatedServerProperties dedicatedserverproperties = ((DedicatedServer) server).getProperties();
+
+            worldsettings = new LevelSettings(dedicatedserverproperties.levelName,
+                    dedicatedserverproperties.gamemode, dedicatedserverproperties.hardcore, dedicatedserverproperties.difficulty,
+                    false, new GameRules(),
+                    server.datapackconfiguration);
+            generatorsettings = dedicatedserverproperties.getWorldGenSettings(server.registryAccess());
+
+            WorldData data = new PrimaryLevelData(worldsettings, generatorsettings, Lifecycle.stable());
+
+            var field = MinecraftServer.class.getDeclaredField("o");
+
+            field.setAccessible(true);
+            field.set(server, data); // Set default world settings ( prevent mean nullpointers)
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+
         if (normalWorld != null) {
-            defaultWorld = createDefaultWorld(normalWorld, LevelStem.OVERWORLD, ServerLevel.OVERWORLD);
+            normalWorld.getPropertyMap().setValue(SlimeProperties.ENVIRONMENT, World.Environment.NORMAL.toString().toLowerCase());
+            defaultWorld = createCustomWorld(normalWorld, Level.OVERWORLD);
         }
 
         if (netherWorld != null) {
-            defaultNetherWorld = createDefaultWorld(netherWorld, LevelStem.NETHER, ServerLevel.NETHER);
+            netherWorld.getPropertyMap().setValue(SlimeProperties.ENVIRONMENT, World.Environment.NETHER.toString().toLowerCase());
+            defaultNetherWorld = createCustomWorld(netherWorld, Level.NETHER);
         }
 
         if (endWorld != null) {
-            defaultEndWorld = createDefaultWorld(endWorld, LevelStem.END, ServerLevel.END);
+            endWorld.getPropertyMap().setValue(SlimeProperties.ENVIRONMENT, World.Environment.THE_END.toString().toLowerCase());
+            defaultEndWorld = createCustomWorld(endWorld, Level.END);
         }
 
-        loadingDefaultWorlds = false;
-    }
-
-    private CustomWorldServer createDefaultWorld(SlimeWorld world, ResourceKey<LevelStem> dimensionKey,
-                                                 ResourceKey<Level> worldKey) {
-        PrimaryLevelData worldDataServer = createWorldData(world);
-
-        MappedRegistry<LevelStem> registryMaterials = worldDataServer.worldGenSettings().dimensions();
-        LevelStem worldDimension = registryMaterials.get(dimensionKey);
-        DimensionType dimensionManager = worldDimension.type();
-        ChunkGenerator chunkGenerator = worldDimension.generator();
-
-        World.Environment environment = getEnvironment(world);
-
-        if (dimensionKey == LevelStem.NETHER && environment != World.Environment.NORMAL) {
-//            LOGGER.warn("The environment for the default world should always be 'NORMAL'.");
-        }
-
-        try {
-            return new CustomWorldServer((CraftSlimeWorld) world, worldDataServer,
-                    worldKey, dimensionKey, dimensionManager, chunkGenerator, environment);
-        } catch (IOException ex) {
-            throw new RuntimeException(ex); // TODO do something better with this?
-        }
+        injectFakeDimensions = true;
     }
 
     @Override
@@ -149,67 +176,97 @@ public class v1171SlimeNMS implements SlimeNMS {
             throw new IllegalArgumentException("World " + worldName + " already exists! Maybe it's an outdated SlimeWorld object?");
         }
 
+        CustomWorldServer server = createCustomWorld(world, null);
+        registerWorld(server);
+    }
+
+    @Override
+    public SlimeWorld getSlimeWorld(World world) {
+        CraftWorld craftWorld = (CraftWorld) world;
+
+        if (!(craftWorld.getHandle() instanceof CustomWorldServer)) {
+            return null;
+        }
+
+        CustomWorldServer worldServer = (CustomWorldServer) craftWorld.getHandle();
+        return worldServer.getSlimeWorld();
+    }
+
+    public void registerWorld(CustomWorldServer server) {
+        MinecraftServer mcServer = MinecraftServer.getServer();
+        mcServer.initWorld(server, server.serverLevelData, mcServer.getWorldData(), server.serverLevelData.worldGenSettings());
+
+        mcServer.levels.put(server.dimension(), server);
+    }
+
+    private CustomWorldServer createCustomWorld(SlimeWorld world, @Nullable ResourceKey<Level> dimensionOverride) {
+        String worldName = world.getName();
+
         PrimaryLevelData worldDataServer = createWorldData(world);
         World.Environment environment = getEnvironment(world);
-        ResourceKey<LevelStem> dimension;
-
-        switch(environment) {
-            case NORMAL:
-                dimension = LevelStem.OVERWORLD;
-                break;
-            case NETHER:
-                dimension = LevelStem.NETHER;
-                break;
-            case THE_END:
-                dimension = LevelStem.END;
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown dimension supplied");
-        }
+        ResourceKey<LevelStem> dimension = switch (environment) {
+            case NORMAL -> LevelStem.OVERWORLD;
+            case NETHER -> LevelStem.NETHER;
+            case THE_END -> LevelStem.END;
+            default -> throw new IllegalArgumentException("Unknown dimension supplied");
+        };
 
         MappedRegistry<LevelStem> materials = worldDataServer.worldGenSettings().dimensions();
         LevelStem worldDimension = materials.get(dimension);
-        DimensionType dimensionManager = worldDimension.type();
+
+
+        DimensionType type = null;
+        {
+            DimensionType predefinedType = worldDimension.type();
+
+            OptionalLong fixedTime = switch (environment) {
+                case NORMAL -> OptionalLong.empty();
+                case NETHER -> OptionalLong.of(18000L);
+                case THE_END -> OptionalLong.of(6000L);
+                case CUSTOM -> throw new UnsupportedOperationException();
+            };
+            double light = switch (environment) {
+                case NORMAL, THE_END -> 0;
+                case NETHER -> 0.1;
+                case CUSTOM -> throw new UnsupportedOperationException();
+            };
+
+            ResourceLocation infiniburn = switch (environment) {
+                case NORMAL -> BlockTags.INFINIBURN_OVERWORLD.getName();
+                case NETHER -> BlockTags.INFINIBURN_NETHER.getName();
+                case THE_END -> BlockTags.INFINIBURN_END.getName();
+                case CUSTOM -> throw new UnsupportedOperationException();
+            };
+
+
+            type = DimensionType.create(fixedTime, predefinedType.hasSkyLight(), predefinedType.hasCeiling(),
+                    predefinedType.ultraWarm(), predefinedType.natural(), predefinedType.coordinateScale(),
+                    world.getPropertyMap().getValue(SlimeProperties.DRAGON_BATTLE), predefinedType.piglinSafe(), predefinedType.bedWorks(),
+                    predefinedType.respawnAnchorWorks(), predefinedType.hasRaids(),
+                    predefinedType.minY(), predefinedType.height(), predefinedType.logicalHeight(), predefinedType.getBiomeZoomer(),
+                    infiniburn,
+                    predefinedType.effectsLocation(),
+                    (float) light);
+        }
+
         ChunkGenerator chunkGenerator = worldDimension.generator();
 
-        ResourceKey<Level> worldKey = ResourceKey.create(Registry.DIMENSION_REGISTRY,
-                new ResourceLocation(worldName.toLowerCase(java.util.Locale.ENGLISH)));
+        ResourceKey<Level> worldKey = dimensionOverride == null ? ResourceKey.create(Registry.DIMENSION_REGISTRY,
+                new ResourceLocation(worldName.toLowerCase(java.util.Locale.ENGLISH))) : dimensionOverride;
 
-        CustomWorldServer server;
+        CustomWorldServer level;
 
         try {
-            server = new CustomWorldServer((CraftSlimeWorld) world, worldDataServer,
-                    worldKey, dimension, dimensionManager, chunkGenerator, environment);
+            level = new CustomWorldServer((CraftSlimeWorld) world, worldDataServer,
+                    worldKey, dimension, type, chunkGenerator, environment);
         } catch (IOException ex) {
             throw new RuntimeException(ex); // TODO do something better with this?
         }
 
-        EndDragonFight dragonBattle = server.dragonFight();
-        boolean runBattle = world.getPropertyMap().getValue(SlimeProperties.DRAGON_BATTLE);
+        level.setReady(true);
+        level.setSpawnSettings(world.getPropertyMap().getValue(SlimeProperties.ALLOW_MONSTERS), world.getPropertyMap().getValue(SlimeProperties.ALLOW_ANIMALS));
 
-        if(dragonBattle != null && !runBattle) {
-            dragonBattle.dragonEvent.setVisible(false);
-            // todo the dragon event should be removed from the world
-        }
-
-        server.setReady(true);
-
-        MinecraftServer mcServer = MinecraftServer.getServer();
-        mcServer.initWorld(server, worldDataServer, mcServer.getWorldData(), worldDataServer.worldGenSettings());
-
-        mcServer.server.addWorld(server.getWorld());
-        mcServer.levels.put(worldKey, server);
-
-        server.setSpawnSettings(world.getPropertyMap().getValue(SlimeProperties.ALLOW_MONSTERS), world.getPropertyMap().getValue(SlimeProperties.ALLOW_ANIMALS));
-
-        Bukkit.getPluginManager().callEvent(new WorldInitEvent(server.getWorld()));
-        mcServer.loadSpawn(server.chunkSource.chunkMap.progressListener, server);
-//        try {
-//            world.getLoader().loadWorld(worldName, world.isReadOnly());
-//        } catch(UnknownWorldException | WorldInUseException | IOException e) {
-//            e.printStackTrace();
-//        }
-        Bukkit.getPluginManager().callEvent(new WorldLoadEvent(server.getWorld()));
+        return level;
     }
 
     private World.Environment getEnvironment(SlimeWorld world) {
@@ -247,7 +304,7 @@ public class v1171SlimeNMS implements SlimeNMS {
                 Map<String, GameRules.Key<?>> gameRuleKeys = CraftWorld.getGameRulesNMS();
 
                 compound.getAllKeys().forEach(gameRule -> {
-                    if(gameRuleKeys.containsKey(gameRule)) {
+                    if (gameRuleKeys.containsKey(gameRule)) {
                         GameRules.Value<?> gameRuleValue = rules.getRule(gameRuleKeys.get(gameRule));
                         String theValue = compound.getString(gameRule);
                         gameRuleValue.deserialize(theValue);
@@ -269,25 +326,4 @@ public class v1171SlimeNMS implements SlimeNMS {
         return worldDataServer;
     }
 
-    @Override
-    public SlimeWorld getSlimeWorld(World world) {
-        CraftWorld craftWorld = (CraftWorld) world;
-
-        if (!(craftWorld.getHandle() instanceof CustomWorldServer)) {
-            return null;
-        }
-
-        CustomWorldServer worldServer = (CustomWorldServer) craftWorld.getHandle();
-        return worldServer.getSlimeWorld();
-    }
-
-    @Override
-    public CompoundTag convertChunk(CompoundTag tag) {
-        net.minecraft.nbt.CompoundTag nmsTag = (net.minecraft.nbt.CompoundTag) Converter.convertTag(tag);
-        int version = nmsTag.getInt("DataVersion");
-
-        net.minecraft.nbt.CompoundTag newNmsTag = NbtUtils.update(DataFixers.getDataFixer(), DataFixTypes.CHUNK, nmsTag, version);
-
-        return (CompoundTag) Converter.convertTag("", newNmsTag);
-    }
 }
