@@ -3,8 +3,8 @@ plugins {
 }
 
 dependencies {
-    paperDevBundle("1.17.1-R0.1-SNAPSHOT")
-    compileOnly("io.papermc.paper:paper-api:1.17.1-R0.1-SNAPSHOT")
+    paperDevBundle("1.18.2-R0.1-SNAPSHOT")
+
     compileOnly(project(":slimeworldmanager-nms-common"))
     compileOnly(project(":slimeworldmanager-api"))
     compileOnly(project(":slimeworldmanager-classmodifierapi"))
@@ -12,10 +12,22 @@ dependencies {
     implementation("com.flowpowered:flow-nbt:2.0.2")
 }
 
+
 tasks {
     assemble {
         dependsOn(reobfJar)
     }
+
+    java {
+        toolchain {
+            languageVersion.set(JavaLanguageVersion.of(17))
+        }
+    }
+
+    compileJava {
+        options.release.set(17)
+    }
+
 }
 
-description = "slimeworldmanager-nms-v117-1"
+description = "slimeworldmanager-nms-v118-2"

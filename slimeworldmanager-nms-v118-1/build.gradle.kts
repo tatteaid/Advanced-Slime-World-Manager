@@ -1,10 +1,9 @@
 plugins {
-    id("io.papermc.paperweight.userdev") version "1.3.3"
+    id("io.papermc.paperweight.userdev") version "1.3.5"
 }
 
 dependencies {
     paperDevBundle("1.18.1-R0.1-SNAPSHOT")
-    compileOnly("io.papermc.paper:paper-api:1.18.1-R0.1-SNAPSHOT")
     compileOnly(project(":slimeworldmanager-nms-common"))
     compileOnly(project(":slimeworldmanager-api"))
     compileOnly(project(":slimeworldmanager-classmodifierapi"))

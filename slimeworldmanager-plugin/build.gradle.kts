@@ -7,6 +7,7 @@ dependencies {
     implementation(project(":slimeworldmanager-nms-common"))
     implementation(project(":slimeworldmanager-nms-v117-1", "reobf"))
     implementation(project(":slimeworldmanager-nms-v118-1", "reobf"))
+    implementation(project(":slimeworldmanager-nms-v118-2", "reobf"))
 
     implementation("com.flowpowered:flow-nbt:2.0.2")
     implementation("com.github.luben:zstd-jni:1.4.9-5")
