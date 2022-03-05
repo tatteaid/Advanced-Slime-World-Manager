@@ -1,52 +1,37 @@
 package com.grinderwolf.swm.nms.v1182;
 
 import com.flowpowered.nbt.CompoundTag;
-import com.grinderwolf.swm.api.world.SlimeWorld;
-import com.grinderwolf.swm.api.world.properties.SlimeProperties;
-import com.grinderwolf.swm.nms.CraftSlimeWorld;
-import com.grinderwolf.swm.nms.SlimeNMS;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.Lifecycle;
-import lombok.Getter;
-import net.minecraft.SharedConstants;
+import com.grinderwolf.swm.api.world.*;
+import com.grinderwolf.swm.api.world.properties.*;
+import com.grinderwolf.swm.nms.*;
+import com.mojang.serialization.*;
+import lombok.*;
+import net.minecraft.*;
+import net.minecraft.core.Registry;
 import net.minecraft.core.*;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.dedicated.DedicatedServer;
-import net.minecraft.server.dedicated.DedicatedServerProperties;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.datafix.DataFixTypes;
-import net.minecraft.util.datafix.DataFixers;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.nbt.*;
+import net.minecraft.resources.*;
+import net.minecraft.server.*;
+import net.minecraft.server.dedicated.*;
+import net.minecraft.server.level.*;
+import net.minecraft.tags.*;
+import net.minecraft.util.datafix.*;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelSettings;
-import net.minecraft.world.level.chunk.ChunkGenerator;
-import net.minecraft.world.level.dimension.DimensionType;
-import net.minecraft.world.level.dimension.LevelStem;
-import net.minecraft.world.level.dimension.end.EndDragonFight;
-import net.minecraft.world.level.storage.LevelStorageSource;
-import net.minecraft.world.level.storage.LevelVersion;
-import net.minecraft.world.level.storage.PrimaryLevelData;
-import org.apache.commons.io.FileUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.bukkit.Bukkit;
-import org.bukkit.World;
+import net.minecraft.world.level.*;
+import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.chunk.*;
+import net.minecraft.world.level.dimension.*;
+import net.minecraft.world.level.storage.*;
+import org.apache.commons.io.*;
+import org.apache.logging.log4j.*;
+import org.bukkit.*;
 import org.bukkit.craftbukkit.v1_18_R2.*;
-import org.bukkit.event.world.WorldInitEvent;
-import org.bukkit.event.world.WorldLoadEvent;
+import org.bukkit.event.world.*;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.io.*;
+import java.nio.file.*;
+import java.util.*;
 
 @Getter
 public class v1182SlimeNMS implements SlimeNMS {
@@ -151,7 +136,7 @@ public class v1182SlimeNMS implements SlimeNMS {
         World.Environment environment = getEnvironment(world);
         ResourceKey<LevelStem> dimension;
 
-        switch(environment) {
+        switch (environment) {
             case NORMAL:
                 dimension = LevelStem.OVERWORLD;
                 break;
@@ -173,21 +158,48 @@ public class v1182SlimeNMS implements SlimeNMS {
         ResourceKey<Level> worldKey = ResourceKey.create(Registry.DIMENSION_REGISTRY,
                 new ResourceLocation(worldName.toLowerCase(java.util.Locale.ENGLISH)));
 
+        Holder<DimensionType> type = null;
+        {
+            DimensionType predefinedType = worldDimension.typeHolder().value();
+
+            OptionalLong fixedTime = switch (environment) {
+                case NORMAL -> OptionalLong.empty();
+                case NETHER -> OptionalLong.of(18000L);
+                case THE_END -> OptionalLong.of(6000L);
+                case CUSTOM -> throw new UnsupportedOperationException();
+            };
+            double light = switch (environment) {
+                case NORMAL, THE_END -> 0;
+                case NETHER -> 0.1;
+                case CUSTOM -> throw new UnsupportedOperationException();
+            };
+
+            TagKey<Block> infiniburn = switch (environment) {
+                case NORMAL -> BlockTags.INFINIBURN_OVERWORLD;
+                case NETHER -> BlockTags.INFINIBURN_NETHER;
+                case THE_END -> BlockTags.INFINIBURN_END;
+                case CUSTOM -> throw new UnsupportedOperationException();
+            };
+
+
+            type = Holder.direct(DimensionType.create(fixedTime, predefinedType.hasSkyLight(), predefinedType.hasCeiling(),
+                    predefinedType.ultraWarm(), predefinedType.natural(), predefinedType.coordinateScale(),
+                    world.getPropertyMap().getValue(SlimeProperties.DRAGON_BATTLE), predefinedType.piglinSafe(), predefinedType.bedWorks(),
+                    predefinedType.respawnAnchorWorks(), predefinedType.hasRaids(),
+                    predefinedType.minY(), predefinedType.height(), predefinedType.logicalHeight(),
+                    infiniburn,
+                    predefinedType.effectsLocation(),
+                    (float) light));
+        }
+
+
         CustomWorldServer server;
 
         try {
             server = new CustomWorldServer((CraftSlimeWorld) world, worldDataServer,
-                    worldKey, dimension, dimensionManager, chunkGenerator, environment);
+                    worldKey, dimension, type, chunkGenerator, environment);
         } catch (IOException ex) {
             throw new RuntimeException(ex); // TODO do something better with this?
-        }
-
-        EndDragonFight dragonBattle = server.dragonFight();
-        boolean runBattle = world.getPropertyMap().getValue(SlimeProperties.DRAGON_BATTLE);
-
-        if(dragonBattle != null && !runBattle) {
-            dragonBattle.dragonEvent.setVisible(false);
-            // todo the dragon event should be removed from the world
         }
 
         server.setReady(true);
@@ -243,7 +255,7 @@ public class v1182SlimeNMS implements SlimeNMS {
                 Map<String, GameRules.Key<?>> gameRuleKeys = CraftWorld.getGameRulesNMS();
 
                 compound.getAllKeys().forEach(gameRule -> {
-                    if(gameRuleKeys.containsKey(gameRule)) {
+                    if (gameRuleKeys.containsKey(gameRule)) {
                         GameRules.Value<?> gameRuleValue = rules.getRule(gameRuleKeys.get(gameRule));
                         String theValue = compound.getString(gameRule);
                         gameRuleValue.deserialize(theValue);
