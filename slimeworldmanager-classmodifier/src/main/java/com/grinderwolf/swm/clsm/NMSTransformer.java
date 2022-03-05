@@ -7,6 +7,7 @@ import javassist.CtClass;
 import javassist.CtMethod;
 import javassist.LoaderClassPath;
 import javassist.NotFoundException;
+import javassist.bytecode.stackmap.*;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -21,8 +22,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.Instrumentation;
-import java.net.JarURLConnection;
-import java.net.URL;
+import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -177,12 +177,12 @@ public class NMSTransformer implements ClassFileTransformer {
     private Set<String> filesChecked = new HashSet<>();
 
     public @NonNull String getNMSVersion(final @NonNull String minecraftVersion) {
-        if ("1.17.1".equals(minecraftVersion)) {
-            return "v1_17_R1";
-        } else if ("1.18.1".equals(minecraftVersion)) {
-            return "v1_18_R1";
-        }
-        return "unknown " + minecraftVersion;
+        return switch (minecraftVersion) {
+            case "1.17.1" -> "v1_17_R1";
+            case "1.18.1" -> "v1_18_R1";
+            case "1.18.2" -> "v1_18_R2";
+            default -> throw new UnsupportedOperationException(minecraftVersion);
+        };
     }
 
     @Override
