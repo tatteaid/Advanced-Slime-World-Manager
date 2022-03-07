@@ -5,6 +5,7 @@ import com.grinderwolf.swm.clsm.ClassModifier;
 import com.mojang.datafixers.util.Either;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import net.minecraft.world.level.*;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ImposterProtoChunk;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -47,7 +48,13 @@ public class CraftCLSMBridge implements CLSMBridge {
 
     @Override
     public boolean isCustomWorld(Object world) {
-        return world instanceof CustomWorldServer;
+        if (world instanceof CustomWorldServer) {
+            return true;
+        } else if (world instanceof Level) {
+            return false;
+        } else {
+            throw new IllegalStateException("World is probably not a world, was given %s. Check the classmodifier to ensure the correct level field is passed (check for field name changes)".formatted(world));
+        }
     }
 
     @Override
