@@ -38,33 +38,20 @@ import java.util.*;
 public class v1182SlimeNMS implements SlimeNMS {
 
     private static final Logger LOGGER = LogManager.getLogger("SWM");
-    private static final File UNIVERSE_DIR;
-    public static LevelStorageSource CONVERTABLE;
     public static boolean isPaperMC;
 
+    public static LevelStorageSource CUSTOM_LEVEL_STORAGE;
+
     static {
-        Path path;
-
         try {
-            path = Files.createTempDirectory("swm-" + UUID.randomUUID().toString().substring(0, 5) + "-");
+            Path path = Files.createTempDirectory("swm-" + UUID.randomUUID().toString().substring(0, 5)).toAbsolutePath();
+            CUSTOM_LEVEL_STORAGE = new LevelStorageSource(path, path, DataFixers.getDataFixer());
+
+            FileUtils.forceDeleteOnExit(path.toFile());
+
         } catch (IOException ex) {
-//            LOGGER.log(Level.FATAL, "Failed to create temp directory", ex);
-            path = null;
-            System.exit(1);
+            throw new IllegalStateException("Couldn't create dummy file directory.", ex);
         }
-
-        UNIVERSE_DIR = path.toFile();
-        CONVERTABLE = LevelStorageSource.createDefault(path);
-
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-
-            try {
-                FileUtils.deleteDirectory(UNIVERSE_DIR);
-            } catch (IOException ex) {
-//                LOGGER.log(Level.FATAL, "Failed to delete temp directory", ex);
-            }
-
-        }));
     }
 
     private final byte worldVersion = 0x08;
@@ -92,7 +79,6 @@ public class v1182SlimeNMS implements SlimeNMS {
         }
 
         System.out.println("INJECTING: " + defaultWorld + " " + defaultNetherWorld + " " + defaultEndWorld);
-
 
         MinecraftServer server = MinecraftServer.getServer();
         server.server.scoreboardManager = new CraftScoreboardManager(server, server.getScoreboard());
@@ -173,11 +159,10 @@ public class v1182SlimeNMS implements SlimeNMS {
     public SlimeWorld getSlimeWorld(World world) {
         CraftWorld craftWorld = (CraftWorld) world;
 
-        if (!(craftWorld.getHandle() instanceof CustomWorldServer)) {
+        if (!(craftWorld.getHandle() instanceof CustomWorldServer worldServer)) {
             return null;
         }
 
-        CustomWorldServer worldServer = (CustomWorldServer) craftWorld.getHandle();
         return worldServer.getSlimeWorld();
     }
 
@@ -270,6 +255,7 @@ public class v1182SlimeNMS implements SlimeNMS {
         MinecraftServer mcServer = MinecraftServer.getServer();
         DedicatedServerProperties serverProps = ((DedicatedServer) mcServer).getProperties();
 
+        // TODO: see about scrapping this, seems to be only used for the importer?
         if (extraTag.getTagType("LevelData") == Tag.TAG_COMPOUND) {
             net.minecraft.nbt.CompoundTag levelData = extraTag.getCompound("LevelData");
             int dataVersion = levelData.getTagType("DataVersion") == Tag.TAG_INT ? levelData.getInt("DataVersion") : -1;

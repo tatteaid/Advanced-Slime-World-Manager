@@ -84,7 +84,7 @@ public class CustomWorldServer extends ServerLevel {
                              Holder<DimensionType> dimensionManager, ChunkGenerator chunkGenerator,
                              org.bukkit.World.Environment environment) throws IOException {
         super(MinecraftServer.getServer(), MinecraftServer.getServer().executor,
-                v1182SlimeNMS.CONVERTABLE.createAccess(world.getName(), dimensionKey),
+                v1182SlimeNMS.CUSTOM_LEVEL_STORAGE.createAccess(world.getName(), dimensionKey),
                 worldData, worldKey, dimensionManager, MinecraftServer.getServer().progressListenerFactory.create(11),
                 chunkGenerator, false, 0, new ArrayList<>(), true, environment, null, null);
 
