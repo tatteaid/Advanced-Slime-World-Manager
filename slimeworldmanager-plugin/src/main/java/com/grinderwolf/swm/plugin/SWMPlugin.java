@@ -148,14 +148,21 @@ public class SWMPlugin extends JavaPlugin implements SlimePlugin {
                 .filter(Objects::nonNull)
                 .filter((slimeWorld -> !slimeWorld.isReadOnly()))
                 .map(w -> (CraftSlimeWorld) w)
-                .forEach(w -> {
+                .forEach(world -> {
                     try {
-                        w.getLoader().saveWorld(
-                                w.getName(),
-                                w.serialize(),
-                                w.isLocked()
+                        SlimeLoader loader = world.getLoader();
+                        String name = world.getName();
+
+                        loader.saveWorld(
+                                name,
+                                world.serialize(),
+                                world.isLocked()
                         );
-                    } catch (IOException e) {
+
+                        if (loader.isWorldLocked(name)) {
+                            loader.unlockWorld(name);
+                        }
+                    } catch (IOException | UnknownWorldException e) {
                         e.printStackTrace();
                     }
                 });
