@@ -1,26 +1,19 @@
 package com.grinderwolf.swm.plugin.loaders.slime.impl;
 
 import com.flowpowered.nbt.*;
-import com.flowpowered.nbt.stream.NBTInputStream;
-import com.github.luben.zstd.Zstd;
-import com.grinderwolf.swm.api.exceptions.CorruptedWorldException;
-import com.grinderwolf.swm.api.loaders.SlimeLoader;
-import com.grinderwolf.swm.api.utils.NibbleArray;
-import com.grinderwolf.swm.api.world.SlimeChunk;
-import com.grinderwolf.swm.api.world.SlimeChunkSection;
-import com.grinderwolf.swm.api.world.properties.SlimePropertyMap;
-import com.grinderwolf.swm.nms.CraftSlimeChunk;
-import com.grinderwolf.swm.nms.CraftSlimeChunkSection;
-import com.grinderwolf.swm.nms.CraftSlimeWorld;
-import com.grinderwolf.swm.plugin.loaders.slime.SlimeWorldReader;
-import lombok.Data;
+import com.flowpowered.nbt.stream.*;
+import com.github.luben.zstd.*;
+import com.grinderwolf.swm.api.exceptions.*;
+import com.grinderwolf.swm.api.loaders.*;
+import com.grinderwolf.swm.api.utils.*;
+import com.grinderwolf.swm.api.world.*;
+import com.grinderwolf.swm.api.world.properties.*;
+import com.grinderwolf.swm.nms.*;
+import com.grinderwolf.swm.plugin.loaders.slime.*;
+import lombok.*;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.EOFException;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
+import java.io.*;
+import java.nio.*;
 import java.util.*;
 
 public class v1_9SlimeWorldFormat implements SlimeWorldReader {
@@ -284,7 +277,7 @@ public class v1_9SlimeWorldFormat implements SlimeWorldReader {
                     // Chunk Sections
                     ChunkSectionData data = worldVersion < 0x08 ? readChunkSections(dataStream, worldVersion, version) : readChunkSectionsNew(dataStream, worldVersion, version);
 
-                    chunkMap.put(((long) minZ + z) * Integer.MAX_VALUE + ((long) minX + x), new CraftSlimeChunk(worldName,minX + x, minZ + z,
+                    chunkMap.put(((long) minZ + z) * Integer.MAX_VALUE + ((long) minX + x), new CraftSlimeChunk(worldName, minX + x, minZ + z,
                             data.sections, heightMaps, biomes, new ArrayList<>(), new ArrayList<>(), data.minSectionY, data.maxSectionY));
                 }
             }

@@ -28,10 +28,7 @@ import net.minecraft.util.Unit;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.biome.BiomeSource;
-import net.minecraft.world.level.biome.Biomes;
-import net.minecraft.world.level.biome.Climate;
+import net.minecraft.world.level.biome.*;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -101,22 +98,8 @@ public class CustomWorldServer extends ServerLevel {
             String biomeStr = slimeWorld.getPropertyMap().getValue(SlimeProperties.DEFAULT_BIOME);
             ResourceKey<Biome> biomeKey = ResourceKey.create(Registry.BIOME_REGISTRY, new ResourceLocation(biomeStr));
             Holder<Biome> defaultBiome = MinecraftServer.getServer().registryAccess().ownedRegistryOrThrow(Registry.BIOME_REGISTRY).getHolder(biomeKey).orElseThrow();
-            this.defaultBiomeSource = new BiomeSource(Collections.emptyList()) {
-                @Override
-                protected Codec<? extends BiomeSource> codec() {
-                    return null;
-                }
 
-                @Override
-                public BiomeSource withSeed(long seed) {
-                    return this;
-                }
-
-                @Override
-                public Holder<Biome> getNoiseBiome(int x, int y, int z, Climate.Sampler noise) {
-                    return defaultBiome;
-                }
-            };
+            this.defaultBiomeSource = new FixedBiomeSource(defaultBiome);
         }
 
         this.keepSpawnInMemory = false;

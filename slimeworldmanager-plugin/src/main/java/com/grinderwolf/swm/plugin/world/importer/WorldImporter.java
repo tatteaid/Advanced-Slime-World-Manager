@@ -42,7 +42,7 @@ public class WorldImporter {
             return 0x06; // 1.16 world
         } else if (dataVersion <= 2730) {
             return 0x07;
-        } else if (dataVersion <= 2865) {
+        } else if (dataVersion <= 2975) {
             return 0x08; // 1.18 world
         } else {
             throw new UnsupportedOperationException("Unsupported world version: " + dataVersion);
@@ -268,9 +268,9 @@ public class WorldImporter {
             sectionsTag = (ListTag<CompoundTag>) compound.getAsListTag("sections").get();
 
             minSectionY = compound.getIntValue("yPos").orElseThrow();
-            maxSectionY = sectionsTag.getValue().stream().map(c -> c.getByteValue("Y").orElseThrow()).max(Byte::compareTo).orElse((byte) 0);
+            maxSectionY = sectionsTag.getValue().stream().map(c -> c.getByteValue("Y").orElseThrow()).max(Byte::compareTo).orElse((byte) 0) + 1; // Add 1 to the section, as we serialize it with the 1 added.
         }
-        SlimeChunkSection[] sectionArray = new SlimeChunkSection[sectionsTag.getValue().size()];
+        SlimeChunkSection[] sectionArray = new SlimeChunkSection[maxSectionY - minSectionY];
 
         for (CompoundTag sectionTag : sectionsTag.getValue()) {
             int index = sectionTag.getByteValue("Y").get();
