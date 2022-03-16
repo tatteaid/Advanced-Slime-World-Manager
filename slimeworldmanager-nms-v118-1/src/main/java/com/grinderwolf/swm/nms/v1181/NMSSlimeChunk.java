@@ -1,27 +1,34 @@
 package com.grinderwolf.swm.nms.v1181;
 
+import com.flowpowered.nbt.CompoundMap;
 import com.flowpowered.nbt.CompoundTag;
 import com.flowpowered.nbt.LongArrayTag;
-import com.flowpowered.nbt.*;
-import com.grinderwolf.swm.api.utils.*;
-import com.grinderwolf.swm.api.world.*;
-import com.grinderwolf.swm.nms.*;
-import com.mojang.serialization.*;
-import lombok.*;
-import net.minecraft.core.*;
+import com.grinderwolf.swm.api.utils.NibbleArray;
+import com.grinderwolf.swm.api.world.SlimeChunk;
+import com.grinderwolf.swm.api.world.SlimeChunkSection;
+import com.grinderwolf.swm.nms.CraftSlimeChunkSection;
+import com.mojang.serialization.Codec;
+import net.minecraft.core.Registry;
+import net.minecraft.core.SectionPos;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
-import net.minecraft.nbt.*;
-import net.minecraft.world.entity.*;
-import net.minecraft.world.level.*;
-import net.minecraft.world.level.biome.*;
-import net.minecraft.world.level.block.entity.*;
-import net.minecraft.world.level.chunk.*;
-import net.minecraft.world.level.chunk.storage.*;
-import net.minecraft.world.level.levelgen.*;
-import net.minecraft.world.level.lighting.*;
-import org.bukkit.craftbukkit.v1_18_R1.entity.*;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.LightLayer;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.Biomes;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.chunk.LevelChunkSection;
+import net.minecraft.world.level.chunk.PalettedContainer;
+import net.minecraft.world.level.chunk.storage.ChunkSerializer;
+import net.minecraft.world.level.entity.PersistentEntitySectionManager;
+import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.lighting.LevelLightEngine;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class NMSSlimeChunk implements SlimeChunk {
 
@@ -131,12 +138,17 @@ public class NMSSlimeChunk implements SlimeChunk {
     public List<CompoundTag> getEntities() {
         List<CompoundTag> entities = new ArrayList<>();
 
-        for (var bukkitEntity : chunk.getBukkitChunk().getEntities()) { // Use api method for performance gains
-            Entity entity = ((CraftEntity) bukkitEntity).getHandle();
+        PersistentEntitySectionManager<Entity> entityManager = chunk.level.entityManager;
 
-            net.minecraft.nbt.CompoundTag entityNbt = new net.minecraft.nbt.CompoundTag();
-            if (entity.save(entityNbt)) {
-                entities.add((CompoundTag) Converter.convertTag("", entityNbt));
+        for (Entity entity : entityManager.getEntityGetter().getAll()) {
+            ChunkPos chunkPos = chunk.getPos();
+            ChunkPos entityPos = entity.chunkPosition();
+
+            if (chunkPos.x == entityPos.x && chunkPos.z == entityPos.z) {
+                net.minecraft.nbt.CompoundTag entityNbt = new net.minecraft.nbt.CompoundTag();
+                if (entity.save(entityNbt)) {
+                    entities.add((CompoundTag) Converter.convertTag("", entityNbt));
+                }
             }
         }
         return entities;
