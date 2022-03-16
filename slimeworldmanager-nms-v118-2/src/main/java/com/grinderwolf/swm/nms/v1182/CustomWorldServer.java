@@ -1,12 +1,12 @@
 package com.grinderwolf.swm.nms.v1182;
 
-import ca.spottedleaf.starlight.common.light.*;
+import ca.spottedleaf.starlight.common.light.SWMRNibbleArray;
 import com.flowpowered.nbt.CompoundMap;
 import com.flowpowered.nbt.CompoundTag;
 import com.flowpowered.nbt.LongArrayTag;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.grinderwolf.swm.api.exceptions.UnknownWorldException;
-import com.grinderwolf.swm.api.utils.*;
+import com.grinderwolf.swm.api.utils.NibbleArray;
 import com.grinderwolf.swm.api.world.SlimeChunk;
 import com.grinderwolf.swm.api.world.SlimeChunkSection;
 import com.grinderwolf.swm.api.world.properties.SlimeProperties;
@@ -16,7 +16,9 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import lombok.Getter;
 import lombok.Setter;
-import net.minecraft.core.*;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.Registry;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -28,17 +30,15 @@ import net.minecraft.util.Unit;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.biome.*;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.BiomeSource;
+import net.minecraft.world.level.biome.Biomes;
+import net.minecraft.world.level.biome.FixedBiomeSource;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.chunk.ChunkGenerator;
-import net.minecraft.world.level.chunk.ImposterProtoChunk;
-import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraft.world.level.chunk.LevelChunkSection;
-import net.minecraft.world.level.chunk.PalettedContainer;
-import net.minecraft.world.level.chunk.UpgradeData;
+import net.minecraft.world.level.chunk.*;
 import net.minecraft.world.level.chunk.storage.ChunkSerializer;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.dimension.LevelStem;
@@ -52,7 +52,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
@@ -106,8 +105,8 @@ public class CustomWorldServer extends ServerLevel {
     }
 
     @Override
-    public void save(@Nullable ProgressListener progressUpdate, boolean forceSave, boolean flag1) {
-        if (!slimeWorld.isReadOnly() && !flag1) {
+    public void save(@Nullable ProgressListener progressUpdate, boolean forceSave, boolean savingDisabled) {
+        if (!slimeWorld.isReadOnly() && !savingDisabled) {
             Bukkit.getPluginManager().callEvent(new WorldSaveEvent(getWorld()));
 
             this.getChunkSource().save(forceSave);
