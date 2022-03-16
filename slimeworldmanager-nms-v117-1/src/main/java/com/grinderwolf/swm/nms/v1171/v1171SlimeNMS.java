@@ -241,14 +241,7 @@ public class v1171SlimeNMS implements SlimeNMS {
             };
 
 
-            type = DimensionType.create(fixedTime, predefinedType.hasSkyLight(), predefinedType.hasCeiling(),
-                    predefinedType.ultraWarm(), predefinedType.natural(), predefinedType.coordinateScale(),
-                    world.getPropertyMap().getValue(SlimeProperties.DRAGON_BATTLE), predefinedType.piglinSafe(), predefinedType.bedWorks(),
-                    predefinedType.respawnAnchorWorks(), predefinedType.hasRaids(),
-                    predefinedType.minY(), predefinedType.height(), predefinedType.logicalHeight(), predefinedType.getBiomeZoomer(),
-                    infiniburn,
-                    predefinedType.effectsLocation(),
-                    (float) light);
+            type = predefinedType;
         }
 
         ChunkGenerator chunkGenerator = worldDimension.generator();
