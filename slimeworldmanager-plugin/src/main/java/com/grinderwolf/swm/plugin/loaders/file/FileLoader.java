@@ -157,7 +157,6 @@ public class FileLoader implements SlimeLoader {
             try (RandomAccessFile randomAccessFile = worldFiles.get(worldName)) {
                 System.out.println("Deleting world.. " + worldName + ".");
                 unlockWorld(worldName);
-                FileUtils.forceDelete(new File(worldDir, worldName + ".slime"));
                 if(randomAccessFile != null) {
                     System.out.print("Attempting to delete worldData " + worldName + ".");
 
@@ -168,6 +167,7 @@ public class FileLoader implements SlimeLoader {
 
                     worldFiles.remove(worldName);
                 }
+                FileUtils.forceDelete(new File(worldDir, worldName + ".slime"));
                 System.out.println("World.. " + worldName + " deleted.");
             } catch(IOException e) {
                 e.printStackTrace();
