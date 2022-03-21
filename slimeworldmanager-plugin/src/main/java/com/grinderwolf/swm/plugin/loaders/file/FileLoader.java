@@ -153,16 +153,14 @@ public class FileLoader implements SlimeLoader {
     public void deleteWorld(String worldName) throws UnknownWorldException {
         if (!worldExists(worldName)) {
             throw new UnknownWorldException(worldName);
-        } else {
-            try {
-                worldFiles.remove(worldName);
-                System.out.println("Deleting world.. " + worldName + ".");
-                unlockWorld(worldName);
-                FileUtils.forceDelete(new File(worldDir, worldName + ".slime"));
-                System.out.println("World: '" + worldName + "' deleted.");
-            } catch(IOException e) {
-                e.printStackTrace();
-            }
+        }
+        try {
+            System.out.println("Deleting world.. " + worldName + ".");
+            unlockWorld(worldName);
+            FileUtils.forceDelete(new File(worldDir, worldName + ".slime"));
+            System.out.println("World: '" + worldName + "' deleted.");
+        } catch(IOException e) {
+            e.printStackTrace();
         }
     }
 }
