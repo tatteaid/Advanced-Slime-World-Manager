@@ -161,20 +161,28 @@ public class CustomWorldServer extends ServerLevel {
         SlimeChunk slimeChunk = slimeWorld.getChunk(x, z);
         LevelChunk chunk;
 
-        if (slimeChunk == null) {
-            ChunkPos pos = new ChunkPos(x, z);
-            LevelChunkTicks<Block> blockLevelChunkTicks = new LevelChunkTicks<>();
-            LevelChunkTicks<Fluid> fluidLevelChunkTicks = new LevelChunkTicks<>();
-
-            chunk = new LevelChunk(this, pos, UpgradeData.EMPTY, blockLevelChunkTicks, fluidLevelChunkTicks,
-                    0L, null, null, null);
-
-            slimeWorld.updateChunk(new NMSSlimeChunk(chunk));
-        } else if (slimeChunk instanceof NMSSlimeChunk) {
-            chunk = ((NMSSlimeChunk) slimeChunk).getChunk(); // This shouldn't happen anymore, unloading should cleanup the chunk
-           // Bukkit.getLogger().log(Level.WARNING, "Improper cleanup of chunk at (%s, %s). Reusing NMS chunk".formatted(x, z));
+        if (slimeChunk instanceof NMSSlimeChunk) {
+            chunk = ((NMSSlimeChunk) slimeChunk).getChunk();
         } else {
-            chunk = convertChunk(slimeChunk);
+            if (slimeChunk == null) {
+                ChunkPos pos = new ChunkPos(x, z);
+
+                // Biomes
+                // Use the default biome source to automatically populate the map with the default biome.
+                //ChunkBiomeContainer biomeStorage = new ChunkBiomeContainer(MinecraftServer.getServer().registryHolder.registryOrThrow(Registry.BIOME_REGISTRY), this, pos, defaultBiomeSource);
+
+                // Tick lists
+                LevelChunkTicks<Block> blockLevelChunkTicks = new LevelChunkTicks<>();
+                LevelChunkTicks<Fluid> fluidLevelChunkTicks = new LevelChunkTicks<>();
+
+                chunk = new LevelChunk(this, pos, UpgradeData.EMPTY, blockLevelChunkTicks, fluidLevelChunkTicks,
+                        0L, null, null, null);
+
+                // Height Maps
+//                HeightMap.a(chunk, ChunkStatus.FULL.h());
+            } else {
+                chunk = convertChunk(slimeChunk);
+            }
 
             slimeWorld.updateChunk(new NMSSlimeChunk(chunk));
         }
